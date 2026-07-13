@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>디아2 레저렉션 악군 신규 아이템 · 트레더리 한→영 검색기</title>
+<style>
+  :root{
+    --bg:#0d0b08; --panel:#17130d; --panel2:#1e1913; --line:#3a3020;
+    --gold:#c7a75c; --gold-bright:#e8ca7d; --text:#d8cfc0; --dim:#8f8371;
+    --unique:#c7b377; --set:#4ee04e; --rw:#c7a75c; --base:#bdbdbd; --charm:#6b8cff;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{background:var(--bg); color:var(--text); font-family:"Malgun Gothic","Apple SD Gothic Neo",sans-serif; padding:24px 16px 60px;}
+  .wrap{max-width:980px; margin:0 auto;}
+  h1{font-size:22px; color:var(--gold-bright); letter-spacing:1px; text-align:center; margin-bottom:6px;}
+  .sub{text-align:center; color:var(--dim); font-size:13px; margin-bottom:18px; line-height:1.6;}
+  .sub b{color:var(--gold);}
+  .searchbar{position:sticky; top:0; z-index:10; background:var(--bg); padding:10px 0 8px;}
+  #q{width:100%; padding:13px 16px; font-size:17px; background:var(--panel2); color:var(--gold-bright);
+     border:1px solid var(--line); border-radius:8px; outline:none;}
+  #q:focus{border-color:var(--gold);}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin:10px 0 4px;}
+  .chip{padding:5px 12px; font-size:12.5px; border:1px solid var(--line); border-radius:20px;
+        background:var(--panel); color:var(--dim); cursor:pointer; user-select:none;}
+  .chip.on{background:#2b2314; color:var(--gold-bright); border-color:var(--gold);}
+  .count{color:var(--dim); font-size:12px; margin:8px 2px;}
+  .card{background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px 14px; margin-bottom:8px;
+        display:flex; flex-wrap:wrap; align-items:center; gap:8px 14px;}
+  .names{flex:1 1 320px; min-width:260px;}
+  .kr{font-size:16.5px; font-weight:bold;}
+  .en{font-size:13.5px; color:var(--dim); margin-top:2px;}
+  .en .copy{cursor:pointer; color:var(--gold); text-decoration:underline dotted; margin-left:6px; font-size:12px;}
+  .meta{font-size:12px; color:var(--dim); margin-top:4px; line-height:1.5;}
+  .tag{display:inline-block; font-size:11px; padding:2px 8px; border-radius:4px; margin-right:6px; border:1px solid var(--line);}
+  .t-rw{color:var(--rw);} .t-unique{color:var(--unique);} .t-set{color:var(--set);}
+  .t-base{color:var(--base);} .t-charm{color:var(--charm);} .t-misc{color:#d98c5f;}
+  .links{display:flex; gap:8px; flex-wrap:wrap;}
+  .btn{display:inline-block; padding:8px 14px; font-size:13px; border-radius:6px; text-decoration:none;
+       border:1px solid var(--gold); color:var(--gold-bright); background:#241c0e; white-space:nowrap;}
+  .btn:hover{background:#332812;}
+  .btn.alt{border-color:var(--line); color:var(--dim); background:var(--panel2);}
+  .empty{text-align:center; color:var(--dim); padding:40px 0; display:none;}
+  .note{background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:12px 16px;
+        font-size:12.5px; color:var(--dim); line-height:1.8; margin-top:26px;}
+  .note b{color:var(--gold);}
+  .toast{position:fixed; bottom:24px; left:50%; transform:translateX(-50%); background:var(--gold); color:#1a1508;
+         padding:10px 22px; border-radius:24px; font-size:14px; font-weight:bold; opacity:0; transition:opacity .25s; pointer-events:none;}
+  .toast.show{opacity:1;}
+  .name-unique{color:var(--unique);} .name-set{color:var(--set);} .name-rw{color:var(--gold-bright);}
+  .name-base{color:var(--base);} .name-charm{color:var(--charm);} .name-misc{color:#d98c5f;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>⚔ 디아2R 악마술사의 군림 신규 아이템 — 트레더리 검색기</h1>
+  <div class="sub">
+    트레더리(Traderie)에서 <b>한글 검색이 안 되는</b> 확장팩·래더 13/14 신규 아이템의 한글명 → 영문명 변환 + 거래 링크<br>
+    한글명 · 초성(ㄱㅎ) · 영문명 모두 검색 가능 — 영문명을 클릭하면 복사됩니다
+  </div>
+
+  <div class="searchbar">
+    <input id="q" type="text" placeholder="검색: 예) 공허, ㅁㄴㄷ, 지옥파수꾼, dreadfang, 잠복하는…" autofocus>
+    <div class="chips" id="chips"></div>
+    <div class="count" id="count"></div>
+  </div>
+
+  <div id="list"></div>
+  <div class="empty" id="empty">검색 결과가 없습니다. 초성·띄어쓰기 없이 다시 시도해 보세요.</div>
+
+  <div class="note">
+    <b>사용법</b> — ① 한글로 검색 → ② [트레더리] 버튼으로 해당 아이템 거래 페이지 이동, 또는 영문명을 복사해 트레더리 검색창에 붙여넣기.
+    개별 페이지 링크가 열리지 않는 아이템은 [검색] 버튼(영문명 검색 결과)을 이용하세요.<br>
+    <b>범위</b> — 악마술사의 군림(패치 3.0, 래더 13) 신규 아이템 전체. 래더 14(패치 3.2)는 밸런스 패치로, 신규 거래 아이템 추가는 없어 이 목록이 최신입니다.<br>
+    <b>참고</b> — 광기(Mania)/히스테리아(Hysteria)는 기존 룬워드 허슬(Hustle)의 무기/갑옷 버전이 개명된 것입니다.
+    한글명은 공식 한국어 클라이언트 표기 기준(인벤 DB·공식 패치 노트 대조)입니다.
+  </div>
+</div>
+<div class="toast" id="toast">영문명 복사됨</div>
+
+<script>
+const T = "https://traderie.com/diablo2resurrected";
+// cat: rw=룬워드, unique=고유, jewel(charm색), set=세트, charm=파괴부적, base=마법서 베이스, misc=기타
+const ITEMS = [
+  // ─── 룬워드 ───
+  {kr:"권위", en:"Authority", cat:"rw", slug:"authority", meta:"룬워드 · Hel + Shael + Ral · 3소켓 갑옷", alias:"권위 룬워드"},
+  {kr:"마녀단", en:"Coven", cat:"rw", slug:"coven", meta:"룬워드 · Ist + Ral + Io · 3소켓 투구", alias:"코븐 마녀회"},
+  {kr:"공허", en:"Void", cat:"rw", slug:"void", meta:"룬워드 · Thul + Zod + Ist · 3소켓 단검", alias:"보이드"},
+  {kr:"경계", en:"Vigilance", cat:"rw", slug:"vigilance", meta:"룬워드 · Dol + Gul · 2소켓 방패", alias:"비질런스"},
+  {kr:"의식", en:"Ritual", cat:"rw", slug:"ritual", meta:"룬워드 · Amn + Shael + Ohm · 3소켓 단검", alias:"리추얼"},
+  {kr:"광기", en:"Mania", cat:"rw", slug:"mania", meta:"룬워드 · Shael + Ko + Eld · 무기 (구 허슬 Hustle 무기 버전 개명)", alias:"마니아 허슬"},
+  {kr:"히스테리아", en:"Hysteria", cat:"rw", slug:"hysteria", meta:"룬워드 · Shael + Ko + Eld · 갑옷 (구 허슬 Hustle 갑옷 버전 개명)", alias:"허슬"},
+  // ─── 고유 아이템 ───
+  {kr:"공포송곳니", en:"Dreadfang", cat:"unique", slug:"dreadfang", meta:"고유 검 · 레전드 소드(Legend Sword)", alias:"드레드팽 공포 송곳니"},
+  {kr:"피의 맹약 파편", en:"Bloodpact Shard", cat:"unique", slug:"bloodpact-shard", meta:"고유 단검 · 미스릴 포인트(Mithril Point)", alias:"블러드팩트 샤드"},
+  {kr:"지옥파수꾼의 의지", en:"Hellwarden's Will", cat:"unique", slug:"hellwardens-will", meta:"고유 투구 · 데스 마스크(Death Mask)", alias:"지옥 파수꾼의 의지 헬워든"},
+  {kr:"망령걸음", en:"Wraithstep", cat:"unique", slug:"wraithstep", meta:"고유 장화 · 미러드 부츠(Mirrored Boots)", alias:"레이스스텝"},
+  {kr:"기드의 내기", en:"Gheed's Wager", cat:"unique", slug:"gheeds-wager", meta:"고유 벨트 · 트롤 벨트(Troll Belt)", alias:"기드 웨이저"},
+  {kr:"새총", en:"Sling", cat:"unique", slug:"sling", meta:"고유 반지 · 적 마법 저항 감소", alias:"슬링"},
+  {kr:"오팔맥", en:"Opalvein", cat:"unique", slug:"opalvein", meta:"고유 반지 · 무작위 원소 피해 %", alias:"오팔베인"},
+  {kr:"엔트로피 로켓", en:"Entropy Locket", cat:"unique", slug:"entropy-locket", meta:"고유 목걸이", alias:"앤트로피 로켓 엔트로피 목걸이"},
+  {kr:"아르스 알디아볼로스", en:"Ars Al'Diabolos", cat:"unique", slug:"ars-aldiabolos", meta:"고유 마법서 · 신성모독 마법서(Blasphemous Grimoire) · 악마술사 전용", alias:"알 디아볼로스"},
+  {kr:"아르스 토르바알로스", en:"Ars Tor'Baalos", cat:"unique", slug:"ars-torbaalos", meta:"고유 마법서 · 신성모독 전서(Blasphemous Compendium) · 악마술사 전용", alias:"토르 바알로스"},
+  {kr:"아르스 둘메피스토스", en:"Ars Dul'Mephistos", cat:"unique", slug:"ars-dulmephistos", meta:"고유 마법서 · 비술 고서(Occult Tome) · 악마술사 전용", alias:"둘 메피스토스"},
+  {kr:"신중한 진노", en:"Measured Wrath", cat:"unique", slug:"measured-wrath", meta:"고유 마법서 · 불탄 문헌(Burnt Text) · 악마술사 전용", alias:"메저드 라스"},
+  // ─── 위압적인 고대인 조각상 (재료) ───
+  {kr:"탈릭의 고뇌", en:"Talic's Anguish", cat:"statue", slug:"talics-anguish", meta:"위압적인 고대인 조각상 · 1막 공포 액트보스 드랍 · 5종 조합 시 붉은 차원문", alias:"탈릭 조각상 석상"},
+  {kr:"콜릭의 고통", en:"Korlic's Pain", cat:"statue", slug:"korlics-pain", meta:"위압적인 고대인 조각상 · 2막 공포 액트보스 드랍 · 5종 조합 시 붉은 차원문", alias:"코를릭의 고통 콜릭 석상"},
+  {kr:"마도크의 분노", en:"Madawc's Ire", cat:"statue", slug:"madawcs-ire", meta:"위압적인 고대인 조각상 · 3막 공포 액트보스 드랍 · 5종 조합 시 붉은 차원문", alias:"마도크 석상"},
+  {kr:"불카토스의 악몽", en:"Bul-Kathos' Nightmare", cat:"statue", slug:"bul-kathos-nightmare", meta:"위압적인 고대인 조각상 · 4막 공포 액트보스 드랍 · 5종 조합 시 붉은 차원문", alias:"불카토스 석상"},
+  {kr:"워러스크의 종말", en:"Worusk's End", cat:"statue", slug:"worusks-end", meta:"위압적인 고대인 조각상 · 5막 공포 액트보스 드랍 · 5종 조합 시 붉은 차원문", alias:"워러스크 석상"},
+  // ─── 고유 주얼 (위압적인 고대인 보상) ───
+  {kr:"수호자의 불", en:"Defender's Fire", cat:"jewel", slug:"defenders-fire", meta:"고유 주얼 · 위압적인 고대인(Colossal Ancients) 보상", alias:"디펜더"},
+  {kr:"수호자의 역정", en:"Defender's Bile", cat:"jewel", slug:"defenders-bile", meta:"고유 주얼 · 위압적인 고대인 보상", alias:"디펜더 바일"},
+  {kr:"보호자의 돌", en:"Protector's Stone", cat:"jewel", slug:"protectors-stone", meta:"고유 주얼 · 위압적인 고대인 보상", alias:"프로텍터"},
+  {kr:"보호자의 서리", en:"Protector's Frost", cat:"jewel", slug:"protectors-frost", meta:"고유 주얼 · 위압적인 고대인 보상", alias:"프로텍터 프로스트"},
+  {kr:"감시자의 빛", en:"Guardian's Light", cat:"jewel", slug:"guardians-light", meta:"고유 주얼 · 위압적인 고대인 보상", alias:"가디언 라이트"},
+  {kr:"감시자의 천둥", en:"Guardian's Thunder", cat:"jewel", slug:"guardians-thunder", meta:"고유 주얼 · 위압적인 고대인 보상", alias:"가디언 썬더"},
+  // ─── 세트 ───
+  {kr:"재앙의 복장", en:"Bane's Garments", cat:"set", slug:null, meta:"세트명 (노말 · 3부위) — 아래 개별 부위로 거래", alias:"베인 세트"},
+  {kr:"재앙의 맹약자", en:"Bane's Oathmaker", cat:"set", slug:"banes-oathmaker", meta:"세트 단검 · 크리스(Kris) · 재앙의 복장", alias:"베인 오스메이커"},
+  {kr:"재앙의 망령껍질", en:"Bane's Wraithskin", cat:"set", slug:"banes-wraithskin", meta:"세트 갑옷 · 하드 레더 아머(Hard Leather Armor) · 재앙의 복장", alias:"베인 레이스스킨"},
+  {kr:"재앙의 권위", en:"Bane's Authority", cat:"set", slug:"banes-authority", meta:"세트 벨트 · 라이트 벨트(Light Belt) · 재앙의 복장", alias:"베인"},
+  {kr:"호라존의 광채", en:"Horazon's Splendor", cat:"set", slug:null, meta:"세트명 (엘리트 · 5부위 · 악마술사 전용) — 아래 개별 부위로 거래", alias:"호라존 세트"},
+  {kr:"호라존의 표정", en:"Horazon's Countenance", cat:"set", slug:"horazons-countenance", meta:"세트 투구 · 데몬헤드(Demonhead) · 호라존의 광채", alias:"호라존 카운터넌스"},
+  {kr:"호라존의 지배", en:"Horazon's Dominion", cat:"set", slug:"horazons-dominion", meta:"세트 갑옷 · 러셋 아머(Russet Armor) · 호라존의 광채", alias:"호라존 도미니언"},
+  {kr:"호라존의 장악", en:"Horazon's Hold", cat:"set", slug:"horazons-hold", meta:"세트 장갑 · 데몬하이드 글러브(Demonhide Gloves) · 호라존의 광채", alias:"호라존 홀드"},
+  {kr:"호라존의 유산", en:"Horazon's Legacy", cat:"set", slug:"horazons-legacy", meta:"세트 장화 · 미러드 부츠(Mirrored Boots) · 호라존의 광채", alias:"호라존 레거시"},
+  {kr:"호라존의 비밀", en:"Horazon's Secrets", cat:"set", slug:"horazons-secrets", meta:"세트 마법서 · 비술 고문서(Occult Codex) · 호라존의 광채", alias:"호라존 시크릿"},
+  // ─── 파괴 부적 (잠복하는 / 새로워진) ───
+  {kr:"잠복하는 칠흑의 천공", en:"Latent Black Cleft", cat:"charm", slug:"latent-black-cleft", meta:"파괴 거대 부적(마법) · 공포의 영역 전령 드랍", alias:"잠복 칠흑"},
+  {kr:"잠복하는 뼈의 분쇄", en:"Latent Bone Break", cat:"charm", slug:"latent-bone-break", meta:"파괴 거대 부적(물리) · 전령 드랍", alias:"잠복 뼈"},
+  {kr:"잠복하는 추위의 파열", en:"Latent Cold Rupture", cat:"charm", slug:"latent-cold-rupture", meta:"파괴 거대 부적(냉기) · 전령 드랍", alias:"잠복 추위 냉기"},
+  {kr:"잠복하는 천상의 틈", en:"Latent Crack of the Heavens", cat:"charm", slug:"latent-crack-of-the-heavens", meta:"파괴 거대 부적(번개) · 전령 드랍", alias:"잠복 천상"},
+  {kr:"잠복하는 불길의 균열", en:"Latent Flame Rift", cat:"charm", slug:"latent-flame-rift", meta:"파괴 거대 부적(화염) · 전령 드랍", alias:"잠복 불길 화염"},
+  {kr:"잠복하는 부패의 분열", en:"Latent Rotting Fissure", cat:"charm", slug:"latent-rotting-fissure", meta:"파괴 거대 부적(독) · 전령 드랍", alias:"잠복 부패 독"},
+  {kr:"새로워진 칠흑의 천공", en:"Renewed Black Cleft", cat:"charm", slug:"renewed-black-cleft", meta:"파괴 거대 부적(마법) 강화판 · 호라드림 함 조합", alias:"리뉴드 칠흑"},
+  {kr:"새로워진 뼈의 분쇄", en:"Renewed Bone Break", cat:"charm", slug:"renewed-bone-break", meta:"파괴 거대 부적(물리) 강화판 · 호라드림 함 조합", alias:"리뉴드 뼈"},
+  {kr:"새로워진 추위의 파열", en:"Renewed Cold Rupture", cat:"charm", slug:"renewed-cold-rupture", meta:"파괴 거대 부적(냉기) 강화판 · 호라드림 함 조합", alias:"리뉴드 냉기"},
+  {kr:"새로워진 천상의 틈", en:"Renewed Crack of the Heavens", cat:"charm", slug:"renewed-crack-of-the-heavens", meta:"파괴 거대 부적(번개) 강화판 · 호라드림 함 조합", alias:"리뉴드 천상"},
+  {kr:"새로워진 불길의 균열", en:"Renewed Flame Rift", cat:"charm", slug:"renewed-flame-rift", meta:"파괴 거대 부적(화염) 강화판 · 호라드림 함 조합", alias:"리뉴드 화염"},
+  {kr:"새로워진 부패의 분열", en:"Renewed Rotting Fissure", cat:"charm", slug:"renewed-rotting-fissure", meta:"파괴 거대 부적(독) 강화판 · 호라드림 함 조합", alias:"리뉴드 독"},
+  // ─── 세계석 조각 ───
+  {kr:"서부 세계석 조각", en:"Western Worldstone Shard", cat:"misc", slug:"western-worldstone-shard", meta:"소모품 · 공포의 영역 지정(1막)", alias:"월드스톤"},
+  {kr:"동부 세계석 조각", en:"Eastern Worldstone Shard", cat:"misc", slug:"eastern-worldstone-shard", meta:"소모품 · 공포의 영역 지정(2막)", alias:"월드스톤"},
+  {kr:"남부 세계석 조각", en:"Southern Worldstone Shard", cat:"misc", slug:"southern-worldstone-shard", meta:"소모품 · 공포의 영역 지정(3막)", alias:"월드스톤"},
+  {kr:"깊은 세계석 조각", en:"Deep Worldstone Shard", cat:"misc", slug:"deep-worldstone-shard", meta:"소모품 · 공포의 영역 지정(4막)", alias:"심층 세계석 월드스톤"},
+  {kr:"북부 세계석 조각", en:"Northern Worldstone Shard", cat:"misc", slug:"northern-worldstone-shard", meta:"소모품 · 공포의 영역 지정(5막)", alias:"월드스톤"},
+  // ─── 마법서 베이스 (악마술사 전용 방패) ───
+  {kr:"오래된 책", en:"Old Book", cat:"base", slug:"old-book", meta:"마법서 베이스 · 노말", alias:"낡은 책"},
+  {kr:"고서", en:"Tome", cat:"base", slug:"tome", meta:"마법서 베이스 · 노말", alias:"톰"},
+  {kr:"고문서", en:"Codex", cat:"base", slug:"codex", meta:"마법서 베이스 · 노말", alias:"코덱스"},
+  {kr:"전서", en:"Compendium", cat:"base", slug:"compendium", meta:"마법서 베이스 · 노말", alias:"컴펜디움"},
+  {kr:"마법서", en:"Grimoire", cat:"base", slug:"grimoire", meta:"마법서 베이스 · 노말", alias:"그리무아르"},
+  {kr:"불탄 문헌", en:"Burnt Text", cat:"base", slug:"burnt-text", meta:"마법서 베이스 · 익셉셔널", alias:"번트 텍스트"},
+  {kr:"어두운 고서", en:"Dark Tome", cat:"base", slug:"dark-tome", meta:"마법서 베이스 · 익셉셔널", alias:"다크 톰 암흑 고서"},
+  {kr:"어두운 고문서", en:"Dark Codex", cat:"base", slug:"dark-codex", meta:"마법서 베이스 · 익셉셔널", alias:"다크 코덱스"},
+  {kr:"빙의된 전서", en:"Possessed Compendium", cat:"base", slug:"possessed-compendium", meta:"마법서 베이스 · 익셉셔널", alias:"포제스드"},
+  {kr:"빙의된 마법서", en:"Possessed Grimoire", cat:"base", slug:"possessed-grimoire", meta:"마법서 베이스 · 익셉셔널", alias:"포제스드 그리무아르"},
+  {kr:"잊힌 책자", en:"Forgotten Volume", cat:"base", slug:"forgotten-volume", meta:"마법서 베이스 · 엘리트", alias:"잊혀진 책자 포가튼"},
+  {kr:"비술 고서", en:"Occult Tome", cat:"base", slug:"occult-tome", meta:"마법서 베이스 · 엘리트", alias:"오컬트 톰"},
+  {kr:"비술 고문서", en:"Occult Codex", cat:"base", slug:"occult-codex", meta:"마법서 베이스 · 엘리트", alias:"오컬트 코덱스"},
+  {kr:"신성모독 전서", en:"Blasphemous Compendium", cat:"base", slug:"blasphemous-compendium", meta:"마법서 베이스 · 엘리트", alias:"블라스페머스"},
+  {kr:"신성모독 마법서", en:"Blasphemous Grimoire", cat:"base", slug:"blasphemous-grimoire", meta:"마법서 베이스 · 엘리트", alias:"블라스페머스 그리무아르"}
+];
+
+const CATS = [
+  ["all","전체"], ["rw","룬워드"], ["unique","고유"], ["jewel","고유 주얼"],
+  ["set","세트"], ["statue","고대인 조각상"], ["charm","파괴 부적"], ["base","마법서 베이스"], ["misc","세계석 조각"]
+];
+const CAT_LABEL = {rw:"룬워드", unique:"고유", jewel:"주얼", set:"세트", statue:"조각상", charm:"부적", base:"베이스", misc:"소모품"};
+const CAT_CLASS = {rw:"rw", unique:"unique", jewel:"charm", set:"set", statue:"misc", charm:"charm", base:"base", misc:"misc"};
+
+// 초성 추출
+const CHO = ["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+function chosung(s){
+  let out="";
+  for(const ch of s){
+    const c = ch.charCodeAt(0);
+    if(c>=0xAC00 && c<=0xD7A3) out += CHO[Math.floor((c-0xAC00)/588)];
+  }
+  return out;
+}
+function norm(s){ return (s||"").toLowerCase().replace(/['’\-\s·()]/g,""); }
+
+ITEMS.forEach(it=>{
+  it._kr = norm(it.kr);
+  it._en = norm(it.en);
+  it._alias = norm(it.alias||"");
+  it._cho = chosung(it.kr.replace(/\s/g,""));
+});
+
+let activeCat = "all";
+const $q = document.getElementById("q"), $list = document.getElementById("list"),
+      $count = document.getElementById("count"), $empty = document.getElementById("empty"),
+      $chips = document.getElementById("chips"), $toast = document.getElementById("toast");
+
+CATS.forEach(([id,label])=>{
+  const el = document.createElement("div");
+  el.className = "chip" + (id==="all"?" on":"");
+  el.textContent = label;
+  el.onclick = ()=>{ activeCat=id;
+    document.querySelectorAll(".chip").forEach(c=>c.classList.remove("on"));
+    el.classList.add("on"); render(); };
+  $chips.appendChild(el);
+});
+
+function esc(s){ return s.replace(/&/g,"&amp;").replace(/</g,"&lt;"); }
+
+function render(){
+  const raw = $q.value.trim(), nq = norm(raw);
+  const isCho = /^[ㄱ-ㅎ]+$/.test(raw.replace(/\s/g,""));
+  const hits = ITEMS.filter(it=>{
+    if(activeCat!=="all" && it.cat!==activeCat) return false;
+    if(!nq && !isCho) return true;
+    if(isCho) return it._cho.includes(raw.replace(/\s/g,""));
+    return it._kr.includes(nq) || it._en.includes(nq) || it._alias.includes(nq);
+  });
+  $count.textContent = `${hits.length}개 아이템`;
+  $empty.style.display = hits.length ? "none" : "block";
+  $list.innerHTML = hits.map(it=>{
+    const cls = CAT_CLASS[it.cat];
+    const prod = it.slug ? `${T}/product/${it.slug}` : null;
+    const srch = `${T}/products?search=${encodeURIComponent(it.en)}`;
+    return `<div class="card">
+      <div class="names">
+        <div class="kr name-${cls}">${esc(it.kr)} <span class="tag t-${cls}">${CAT_LABEL[it.cat]}</span></div>
+        <div class="en">${esc(it.en)}<span class="copy" data-en="${esc(it.en)}">복사</span></div>
+        <div class="meta">${esc(it.meta)}</div>
+      </div>
+      <div class="links">
+        ${prod ? `<a class="btn" href="${prod}" target="_blank" rel="noopener">트레더리 ↗</a>` : ""}
+        <a class="btn alt" href="${srch}" target="_blank" rel="noopener">검색 ↗</a>
+      </div>
+    </div>`;
+  }).join("");
+}
+
+$q.addEventListener("input", render);
+document.addEventListener("click", e=>{
+  if(e.target.classList.contains("copy")){
+    const txt = e.target.dataset.en;
+    navigator.clipboard.writeText(txt).then(()=>{
+      $toast.textContent = `"${txt}" 복사됨`;
+      $toast.classList.add("show");
+      setTimeout(()=>$toast.classList.remove("show"), 1400);
+    }).catch(()=>{
+      const ta=document.createElement("textarea"); ta.value=txt; document.body.appendChild(ta);
+      ta.select(); document.execCommand("copy"); ta.remove();
+      $toast.textContent = `"${txt}" 복사됨`; $toast.classList.add("show");
+      setTimeout(()=>$toast.classList.remove("show"), 1400);
+    });
+  }
+});
+render();
+</script>
+</body>
+</html>
