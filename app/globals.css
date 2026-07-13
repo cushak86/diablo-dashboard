@@ -419,3 +419,28 @@ footer{text-align:center;color:#5a5a5a;font-size:12px;padding:10px 0 30px}
 .px-msg{margin-top:10px;font-size:12px;border-radius:8px;padding:8px 10px;background:rgba(0,0,0,.4);color:#9a9a9a}
 .px-msg.err{color:var(--bloodbright);background:rgba(193,39,45,.1)}
 .px-msg.ok{color:#6ee7b7;background:rgba(16,185,129,.1)}
+
+/* ── 룬 재고 시뮬레이터(/planner) ── */
+.rp-warn{border-left:2px solid rgba(242,153,74,.55);padding-left:10px;color:#c9b48f}
+.rp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:8px;margin-top:10px}
+.rp-cell{border:1px solid var(--line);background:rgba(0,0,0,.25);border-radius:10px;padding:8px}
+.rp-cell.on{border-color:rgba(199,179,119,.45);background:rgba(199,179,119,.08)}
+.rp-cell-name{font-size:12px;font-weight:700;color:var(--parch);margin-bottom:6px}
+.rp-idx{font-size:10px;color:#7a7a7a;margin-right:2px}
+.rp-stepper{display:flex;align-items:center;gap:4px}
+.rp-btn{width:26px;height:26px;flex:0 0 26px;border:1px solid var(--line);background:var(--panel2);
+  color:var(--parch);border-radius:8px;font-size:14px;font-weight:800;cursor:pointer;line-height:1}
+.rp-btn:hover{border-color:rgba(199,179,119,.5)}
+.rp-num{width:100%;min-width:0;height:26px;text-align:center;border:1px solid var(--line);
+  background:var(--ink);color:#e6e0d4;border-radius:8px;font-size:13px;font-weight:700;
+  -moz-appearance:textfield;appearance:textfield}
+.rp-num::-webkit-outer-spin-button,.rp-num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.rp-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}
+.rp-tag{font-size:11px;font-weight:800;border-radius:6px;padding:2px 8px;letter-spacing:.02em}
+.rp-ready{color:#6ee7b7;border:1px solid rgba(16,185,129,.4);background:rgba(16,185,129,.12)}
+.rp-cubable{color:var(--clone);border:1px solid rgba(242,153,74,.45);background:rgba(242,153,74,.1)}
+.rp-short{color:#9a9a9a;border:1px solid var(--line);background:rgba(0,0,0,.35)}
+.rp-mtag-short{font-size:11px;font-weight:700;color:#e0a3a3;border:1px solid rgba(139,26,26,.5);
+  background:rgba(139,26,26,.15);border-radius:6px;padding:2px 8px}
+.rp-mtag-gem{font-size:11px;font-weight:700;color:#a8c7e0;border:1px solid rgba(120,160,200,.35);
+  background:rgba(120,160,200,.1);border-radius:6px;padding:2px 8px}

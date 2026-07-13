@@ -11,6 +11,7 @@ const TABS = [
   { href: "/farming", label: "파밍 체크" },
   { href: "/prices", label: "시세 지수" },
   { href: "/cube", label: "호라드릭 큐브" },
+  { href: "/planner", label: "룬 재고" },
   { href: "/breakpoints", label: "프레임 기준" },
 ];
 
