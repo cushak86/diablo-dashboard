@@ -55,9 +55,13 @@
 
 ## 4. 현재 아키텍처 / 파일 구조
 
+> ⚠ 아래 트리는 **2026-07-13 갱신**됐다. 이전 버전은 탭 4개·Next 14 기준이라 실제와 어긋나 있었다
+> (문서를 믿고 작업하면 이미 있는 기능을 중복 구현하게 된다 — 그래서 갱신은 위생 작업이다).
+
 ```
-D:\diablo-dashboard/
-├─ package.json              Next 14.2.35(패치 완료) / React 18.3.1
+multi-agent/diablo-dashboard/          (정본. Windows D:\diablo-dashboard 사본은 폐기됨 — §0 참조)
+├─ package.json              Next 16.2.10 / React 19 · npm audit 0건 · overrides.postcss ^8.5.10
+│                            scripts: dev · build · start · test (lint 없음 — Next 16이 next lint 제거)
 ├─ next.config.mjs
 ├─ .gitignore               (.env.local 제외)
 ├─ .env.local.example       TZ_PROVIDER 및 토큰 예시 (기본 d2emu)
@@ -66,8 +70,9 @@ D:\diablo-dashboard/
 ├─ index.html               (레거시) 서버 없이 여는 오프라인 모의 뷰어. Next 앱과 무관, 참고용
 ├─ app/
 │  ├─ layout.js             루트 레이아웃 + 메타데이터 + 공통 헤더(로고) + TabNav
-│  ├─ components/TabNav.js  탭 내비게이션(클라이언트, usePathname으로 활성 탭 표시). 탭 4개:
-│  │  공역(구 "공포의 영역")|룬워드|프레임(FCR/FHR)|신규 아이템. **"우버 디아" 독립 탭은 제거됨**(2026-07-05,
+│  ├─ components/TabNav.js  탭 내비게이션(클라이언트, usePathname으로 활성 탭 표시). **탭 10개(정본)**:
+│  │  공역|신규 아이템|룬워드|홀리 그레일|파밍 체크|시세 지수|호라드릭 큐브|룬 재고|프레임 기준|백업
+│  │  (+ 우측 관리자모드). **"우버 디아" 독립 탭은 제거됨**(2026-07-05,
 │  │  사용자 요청 — 공역 페이지에 이미 임베드돼 있어 중복이라 판단, `app/uberdiablo/` 디렉터리 자체를 삭제).
 │  ├─ components/UberDiabloWidget.js  클론 디아 위젯(제목+SC/HC토글+지역필터+래더/논래더 카드).
 │  │  현재는 `terror-zone/page.js`에서만 사용(과거엔 별도 `uberdiablo/page.js`와도 공유했으나 그 페이지는 삭제됨).
@@ -80,11 +85,28 @@ D:\diablo-dashboard/
 │  ├─ breakpoints/page.js   ✅ 완료 (2026-07-08). 8직업(악마술사 포함) FCR/FHR 표 + 브레이크포인트 계산기.
 │  │  layout.js에 metadata 분리.
 │  ├─ new-items/page.js     ✅ 완료. 트레더리 한→영 검색기(한글·초성·영문 + 카테고리 필터). layout.js에 metadata.
+│  ├─ grail/page.js         ✅ 수집 체크리스트(신규 고유·세트·주얼·부적 + 33룬 + 룬워드). localStorage `grail:v1`
+│  ├─ farming/page.js       ✅ 일일·주간 체크리스트, KST 자동 초기화. localStorage `farm:v1`
+│  ├─ prices/page.js        ✅ 정적 기준선 + 익명 커뮤니티 제보(Redis). as-of는 lib의 AS_OF 상수가 정본
+│  ├─ cube/page.js          ✅ 룬 업그레이드 레시피 · 룬 조합기
+│  ├─ planner/page.js       ✅ (2026-07-13) 룬 재고 → 제작 가능 룬워드 판정. localStorage `runes:v1`
+│  ├─ backup/page.js        ✅ (2026-07-13) 개인 데이터 export/import. import는 검증 통과 후에만 적용(원자성)
+│  ├─ admin/page.js, admin/stats/page.js, docs/[id]/page.js   관리자·문서 뷰어(noindex)
+│  ├─ <탭>/layout.js        per-page metadata. 10개 탭 전부 보유(2026-07-13 grail·farming·prices 추가로 완비)
 │  ├─ api/terror-zone/route.js   서버 라우트. provider 분기(d2emu/d2runewizard) + 모의 폴백
-│  └─ api/diablo-clone/route.js ✅ d2runewizard diablo-clone 프록시 + 모의 폴백 (RotW 필터링 버그 수정,
-│     아래 항목 참고)
-└─ lib/
-   └─ zones.js              TZ 38개 데이터, 모의 로테이션, d2emu ID매핑, 영문 퍼지매칭
+│  ├─ api/diablo-clone/route.js ✅ d2runewizard diablo-clone 프록시 + 모의 폴백 (RotW 필터링 버그 수정)
+│  ├─ api/price/route.js    익명 시세 제보(허니팟·ipHash·쿨다운 — **무로그인 전제 위에 선 방어 설계**)
+│  ├─ api/track/route.js    페이지뷰 집계(Upstash Redis)
+│  └─ api/admin/*, api/docs/route.js   로그인·로그아웃·문서 CRUD (cookies()는 async — Next 15+)
+├─ lib/
+│  ├─ zones.js              TZ 38개 데이터, 모의 로테이션, d2emu ID매핑, 영문 퍼지매칭
+│  ├─ cube.js               33룬·보석·needCount(승급 규칙) — **룬 데이터 정본**
+│  ├─ runewords.js          룬워드 99종. isNew=3.x 신규 7종(룬 조합 **미검증** — UI에 배지로 고지)
+│  ├─ rune-planner.js       룬 재고 판정 엔진(순수). combine()은 쓰지 않는다 — 혼합 등급 재고를 표현 못 함
+│  ├─ backup.js             export/import + import 검증(포맷·버전·허용키·타입·크기) — 순수
+│  ├─ price-baseline.js     기준선 + **AS_OF 상수**(단일 정본) + monthsSinceAsOf() → 6개월 경과 시 경고 배너
+│  └─ price-catalog.js, price.js, items.js, auth.js, redis.js, docs.js, pages.js
+└─ test/                    node 단위 테스트(의존성 0). `npm test` — rune-planner · backup · price-baseline
 ```
 
 ### 데이터 흐름
@@ -193,9 +215,23 @@ D:\diablo-dashboard/
      데이터 웹 교차검증(클래식=Maxroll, 신규 악마술사=3.0 실측). IAS는 무기 의존적이라 정적 표 대신 계산기 안내.
    - ~~**룬워드 페이지**~~ ✅ 완료 (2026-07-08). 신규 3.x 전체 + 대표 클래식 33종. 룬 순서 오차 0 우선으로
      전체 99종 대신 커리큘럼식 수록(데이터 배열이라 확장 용이). 영문명 주(主)·한글 보조 표기.
-   - (다음 후보) 룬워드 전체 99종 확장, 룬 조합기, 호라드릭 큐브 조합법, 즐겨찾기(localStorage).
-6. (선택) Next.js 16 메이저 업그레이드 검토 — 5번 항목의 잔존 취약점 해소용. breaking change라
-   사용자와 먼저 논의 필요.
+   - ~~(다음 후보) 룬워드 전체 99종 확장, 룬 조합기, 호라드릭 큐브 조합법, 즐겨찾기~~ ✅ **4종 모두 완료.**
+6. ~~(선택) Next.js 16 메이저 업그레이드 검토~~ ✅ **완료 (2026-07-13).** `npm audit` 실측 결과 14.x에는
+   수정판이 **존재하지 않았다**(취약 범위 `9.3.4-canary.0 ~ 16.3.0-canary.5`) — "버티기"는 선택지가 아니었다.
+   16.2.10 + React 19로 올려 **취약점 0건**. 브레이킹 체인지 수정: `cookies()`·동적 라우트 `params`가
+   async가 됨(Next 15+) → `await` 5+2곳. **빌드는 코드 수정 0줄로 통과했고 `/admin`만 런타임 500이었다 —
+   업그레이드 검증은 build가 아니라 서버 기동 + 전 라우트 실측이다.**
+
+## 7-A. 다음에 할 일 (2026-07-13 기준)
+
+로드맵 정본은 `multi-agent/tasks/diablo-next-features-review/artifacts/next-features-review.md`.
+
+- **알림 확장(공역 교체·파밍 리셋)** — 착수 전 **범위 결정 필요**: 브라우저 닫힘·백그라운드 throttling·
+  정시성 한계를 UI에 명시할 것. "S 작업"으로 약속하지 말 것.
+- **홀리 그레일 클래식 확장** — 코드가 아니라 **데이터 조달이 병목**(유니크·세트 전체 koKR 공식 표기).
+  항목이 6배가 되면 기존 사용자 진행률이 폭락하므로 **범위 토글 + ID 안정성 + `grail:v1 → v2` 마이그레이션**을
+  설계에 선반영해야 한다. 별도 트랙.
+- **시세 관리자 편집(Redis)** — 현재는 정적 상수 + 6개월 경과 자동 경고로 갈음.
 
 ## 8. 프로젝트 규칙 요약 (반드시 준수)
 
@@ -209,7 +245,7 @@ D:\diablo-dashboard/
 ## 9. 새 인스턴스용 시작 프롬프트 (복사해서 사용)
 
 ```
-너는 D2R 하드코어 고인물이자 시니어 프론트엔드 엔지니어야. D:\diablo-dashboard 의
+너는 D2R 하드코어 고인물이자 시니어 프론트엔드 엔지니어야. multi-agent/diablo-dashboard(정본, git) 의
 HANDOFF.md 와 README.md 를 먼저 읽고 현재 상태를 파악해. 이 프로젝트는 Next.js(App Router)
 기반 D2R 대시보드이고, v1으로 공포의 영역 타이머가 구현돼 있어(데이터 소스 d2emu 기본,
 실패 시 모의 폴백). 빌드/런타임 검증과 상단 탭 네비게이션 골격은 이미 완료됨(app/runewords,

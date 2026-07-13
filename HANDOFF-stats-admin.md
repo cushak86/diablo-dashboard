@@ -4,7 +4,7 @@
 > 컨텍스트 문서다. 공역(Terror Zone)·우버디아 등 기존 대시보드 맥락은 `HANDOFF.md`를 참고.
 > 이 기능군은 그 위에 추가된 별개 레이어다.
 
-너는 지금 `D:\diablo-dashboard`(Next.js 14 App Router, 순수 JS, Vercel 배포, git 아님) 저장소에 있다.
+너는 지금 `multi-agent/diablo-dashboard`(Next.js 16 App Router · React 19, 순수 JS, Vercel 배포, **git 정본**) 저장소에 있다.
 아래 기능은 이미 구현·빌드검증·프로덕션 배포·동작확인까지 완료된 상태다.
 
 ## 배포 정보
@@ -13,7 +13,7 @@
 - 재배포: `npx vercel --prod --yes`
 - 백엔드: Upstash Redis 단일. Vercel env 3개 등록됨(Production):
   `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN`, `ADMIN_PASSWORD`
-- 원본 백업: `D:\diablo-dashboard-backup` (node_modules/.next 제외)
+- 백업·롤백: git (`git revert`). 별도 백업 폴더는 없다.
 - 의존성 추가: `@upstash/redis@^1`, `react-markdown@^9`, `remark-gfm@^4`
 
 ## 반영된 기능 (전부 라이브에서 동작 확인됨)
@@ -65,11 +65,20 @@ app/globals.css                 끝에 .md-body 뷰어 스타일 append됨
 - `.env.local`(실제 비밀값)은 열거나 값을 출력하지 마라. 시크릿을 로그/커밋에 남기지 마라.
   `vercel env pull` 등 시크릿 materialize는 차단되어 있고 하지 마라.
 - 완료 보고 전 반드시 `npm run build` 통과 로그를 확인해라(현재 16 페이지 + Middleware).
-- git이 아니므로 큰 변경 전 `D:\diablo-dashboard-backup` 갱신 고려.
+- **정본은 git이다**(`dev-sync`의 `multi-agent/diablo-dashboard/`). 롤백은 `git revert`.
+  Windows `D:\diablo-dashboard`·`D:\diablo-dashboard-backup`는 폐기됐다(2026-07-13).
 - 보안 설계 훼손 금지: graceful degrade, SET nx, 상수시간 비교, **rehype-raw 금지(raw HTML 미렌더)**.
 
+## 구현 상태 정정 (2026-07-13 — 아래 2건은 이미 반영돼 있다)
+
+이 문서는 오래 "미반영"이라고 말해 왔지만 **코드에는 있다.** 문서를 믿고 다시 구현하지 말 것.
+
+- ✅ **로그인 rate-limit** — `app/api/admin/login/route.js:8-9,39` `MAX_FAILS=10` / `WINDOW_SEC=15분`.
+  (`@upstash/ratelimit` 의존성 없이 Redis 카운터로 직접 구현.)
+- ✅ **세션 만료** — `lib/auth.js:4,40` `MAX_AGE_MS=8h`. 쿠키 maxAge뿐 아니라 **서버가 토큰 나이를 검증**한다
+  (시계 오차 허용 포함). 즉 "쿠키 유출 시 비밀번호 변경 전까지 유효"는 더 이상 사실이 아니다 — 8시간 뒤 만료된다.
+
 ## 아직 미반영 (선택 후속 — 요청 시)
-- 로그인 rate-limit(`@upstash/ratelimit`, 무차별 대입 방어). 현재 `/api/admin/login`에 시도 제한 없음.
-- 세션 만료/로테이션: 현재 결정적 HMAC 토큰 + 쿠키 8h. 쿠키 유출 시 비번 변경 전까지 유효.
-  다관리자·로테이션 필요하면 Redis 랜덤 세션ID+TTL로 확장.
+- **세션 로테이션/다관리자** — 현재는 결정적 HMAC 토큰 1개. 관리자가 여럿이거나 개별 로그아웃·강제 만료가
+  필요하면 Redis 랜덤 세션ID + TTL로 바꿔야 한다. (만료 자체는 위처럼 이미 있다.)
 - 정확 UV가 필요하면 Vercel Web Analytics 등 병행(현재는 쿠키 기반 근사치).
