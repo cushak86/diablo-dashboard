@@ -13,6 +13,7 @@ const TABS = [
   { href: "/cube", label: "호라드릭 큐브" },
   { href: "/planner", label: "룬 재고" },
   { href: "/breakpoints", label: "프레임 기준" },
+  { href: "/backup", label: "백업" },
 ];
 
 export default function TabNav() {

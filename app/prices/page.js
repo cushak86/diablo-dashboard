@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect, useRef } from "react";
 import { CATALOG, RUNE_UNITS } from "../../lib/price-catalog";
-import { getBaseline, BASELINE } from "../../lib/price-baseline";
+import { getBaseline, BASELINE, AS_OF, STALE_MONTHS, monthsSinceAsOf } from "../../lib/price-baseline";
 
 const TIER_RANK = { S: 0, A: 1, B: 2, C: 3, D: 4, HR: 5 };
 
@@ -29,6 +29,10 @@ function fmtAgo(t) {
 }
 
 export default function PricesPage() {
+  // 기준선 나이. 렌더 중 new Date()를 부르면 SSR/CSR 값이 갈려 하이드레이션이 깨진다 → 마운트 후 계산.
+  const [staleMonths, setStaleMonths] = useState(null);
+  useEffect(() => setStaleMonths(monthsSinceAsOf()), []);
+
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState(null); // {key, kr, en}
   const [data, setData] = useState(null); // GET 응답
@@ -143,8 +147,14 @@ export default function PricesPage() {
         {/* 기준선 시세표 — 항상 표시. 검색으로 필터, 행 클릭 시 상세/제보 로드. */}
         <div className="card">
           <div className="eyebrow gold">
-            기준선 시세표 <span className="px-low">· 정적 · 비공식 · as-of 2026-07</span>
+            기준선 시세표 <span className="px-low">· 정적 · 비공식 · as-of {AS_OF}</span>
           </div>
+          {staleMonths !== null && staleMonths >= STALE_MONTHS && (
+            <p className="zen px-stale">
+              ⚠ 이 기준선은 <b>{staleMonths}개월 전({AS_OF}) 수집</b>본입니다. 시세는 시즌·패치에 따라 크게 움직이므로
+              지금 값과 다를 수 있습니다 — 아래 커뮤니티 제보를 함께 보세요.
+            </p>
+          )}
           <p className="zen" style={{ marginTop: 6 }}>
             주요·고가 아이템의 <b>스탠다드 / 래더 시즌 초</b> 대략 값어치(고룬 단위). 아래 검색으로 필터하거나
             행을 눌러 커뮤니티 제보 시세도 확인하세요. Data courtesy of diablo2.io.
@@ -353,7 +363,7 @@ export default function PricesPage() {
           <b>안내</b> — 시세는 사용자 익명 제보의 <b>룬 단위별 중앙값(이상치 제외)</b>입니다. 표본이 적을수록
           신뢰도가 낮으니 표본 수를 함께 확인하세요. 수치는 커뮤니티 통용값 기반 <b>비공식·참고용</b>이며 실제 거래를
           보증하지 않습니다. <b>기준선 지표</b>는 제보와 별개인 <b>정적·비공식</b> 참고값으로, 주요 아이템의 스탠다드/래더
-          시즌 초 대략적 값어치를 고룬 단위로 나타냅니다(as-of 2026-07). Data courtesy of diablo2.io.
+          시즌 초 대략적 값어치를 고룬 단위로 나타냅니다(as-of {AS_OF}). Data courtesy of diablo2.io.
         </div>
       </div>
     </main>

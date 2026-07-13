@@ -444,3 +444,17 @@ footer{text-align:center;color:#5a5a5a;font-size:12px;padding:10px 0 30px}
   background:rgba(139,26,26,.15);border-radius:6px;padding:2px 8px}
 .rp-mtag-gem{font-size:11px;font-weight:700;color:#a8c7e0;border:1px solid rgba(120,160,200,.35);
   background:rgba(120,160,200,.1);border-radius:6px;padding:2px 8px}
+
+/* ── 개인 데이터 백업(/backup) ── */
+.bk-file{font-size:12px;color:#9a9a9a}
+.bk-file::file-selector-button{margin-right:10px;border:1px solid var(--line);background:var(--panel2);
+  color:var(--parch);border-radius:8px;padding:6px 10px;font-weight:700;cursor:pointer}
+.bk-file::file-selector-button:hover{border-color:rgba(199,179,119,.5)}
+.bk-confirm{margin-top:12px;border:1px solid rgba(242,153,74,.35);background:rgba(242,153,74,.06);
+  border-radius:12px;padding:12px 14px}
+.bk-lbl{font-size:13px;font-weight:800;color:var(--parch);margin-bottom:8px}
+.bk-changed{color:var(--clone);font-weight:800}
+.bk-error{color:#e0a3a3}
+.bk-warn{color:var(--clone)}
+.bk-done{color:#6ee7b7}
+.px-stale{margin-top:8px;border-left:2px solid rgba(242,153,74,.55);padding-left:10px;color:var(--clone)}
