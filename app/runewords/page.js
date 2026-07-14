@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { runewordCubeCost } from "../../lib/cube";
 import { RW } from "../../lib/runewords";
+import { schedulePush } from "../../lib/sync";
 
 const CATS = [
   ["all", "전체"], ["new", "신규 3.x"], ["weapon", "무기"], ["armor", "갑옷"], ["helm", "투구"], ["shield", "방패"],
@@ -66,6 +67,7 @@ export default function RunewordsPage() {
       if (nx.has(en)) nx.delete(en);
       else nx.add(en);
       try { localStorage.setItem("fav:rw", JSON.stringify([...nx])); } catch {}
+      schedulePush();
       return nx;
     });
   }

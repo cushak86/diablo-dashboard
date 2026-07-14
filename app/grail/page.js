@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { COLLECT, scopeOf } from "../../lib/grail-collect";
 import { loadState, persist, inScope, SCOPES } from "../../lib/grail-store";
+import { schedulePush } from "../../lib/sync";
 
 const CHO = ["ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
 function chosung(s) {
@@ -55,6 +56,7 @@ export default function GrailPage() {
 
   function save(ids, nextScope = scope, seen = noticeSeen) {
     persist(write, { ids, scope: nextScope, noticeSeen: seen, readOnly }, scopeOf);
+    schedulePush();
   }
 
   function toggle(id) {

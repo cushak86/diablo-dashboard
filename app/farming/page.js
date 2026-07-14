@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useEffect } from "react";
+import { schedulePush } from "../../lib/sync";
 
 // KST 달력 기준 문자열(YYYY-MM-DD). Vercel(UTC)에서도 한국 날짜로 판정 → 자정 자동 리셋 근거.
 function kstDateStr(d = new Date()) {
@@ -88,6 +89,7 @@ export default function FarmingPage() {
       if (nx[task.id] === k) delete nx[task.id];
       else nx[task.id] = k;
       try { localStorage.setItem("farm:v1", JSON.stringify(nx)); } catch {}
+      schedulePush();
       return nx;
     });
   }

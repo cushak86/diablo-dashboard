@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { RUNES } from "../../lib/cube";
 import { RW } from "../../lib/runewords";
 import { STATUS, planRuneword } from "../../lib/rune-planner";
+import { schedulePush } from "../../lib/sync";
 
 const LS_KEY = "runes:v1";
 const MAX = 99; // 룬당 재고 상한(엔진은 안전정수까지 받지만 입력은 여기서 막는다)
@@ -34,6 +35,7 @@ export default function PlannerPage() {
       if (v === 0) delete nx[name];
       else nx[name] = v;
       try { localStorage.setItem(LS_KEY, JSON.stringify(nx)); } catch {}
+      schedulePush();
       return nx;
     });
   };

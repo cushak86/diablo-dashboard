@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { buildExport, summarize, parseImport, applyImport } from "../../lib/backup";
 import { loadState, persist } from "../../lib/grail-store";
 import { scopeOf } from "../../lib/grail-collect";
+import { getCode, getSyncedAt, setCode, clearCode, push, pull } from "../../lib/sync";
 
 const read = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
 const write = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
@@ -15,8 +16,45 @@ export default function BackupPage() {
   const [done, setDone] = useState("");
   const fileRef = useRef(null);
 
+  const [code, setCodeState] = useState("");
+  const [syncedAt, setSyncedAt] = useState("");
+  const [codeInput, setCodeInput] = useState("");
+  const [busy, setBusy] = useState(false);
+
   const refresh = () => setCurrent(summarize(read));
-  useEffect(refresh, []);
+  useEffect(() => {
+    refresh();
+    setCodeState(getCode());
+    setSyncedAt(getSyncedAt());
+  }, []);
+
+  const onCreateOrPush = async () => {
+    setError(""); setDone(""); setBusy(true);
+    try {
+      const r = await push(code);
+      setCodeState(r.code);
+      setSyncedAt(r.updatedAt);
+      setDone(code ? "이 기기의 데이터를 올렸습니다." : "동기화 코드를 만들었습니다. 다른 기기에서 이 코드를 입력하세요.");
+    } catch (e) { setError(e.message); }
+    setBusy(false);
+  };
+
+  const onPull = async () => {
+    setError(""); setDone(""); setPending(null); setBusy(true);
+    try {
+      const r = await pull(codeInput);
+      const parsed = parseImport(r.payload);
+      if (!parsed.ok) { setError(parsed.error); }
+      else { setPending({ ...parsed, fromCode: codeInput.trim().toLowerCase(), updatedAt: r.updatedAt }); }
+    } catch (e) { setError(e.message); }
+    setBusy(false);
+  };
+
+  const onUnlink = () => {
+    clearCode();
+    setCodeState(""); setSyncedAt("");
+    setDone("이 기기의 연결을 끊었습니다. 서버의 데이터는 그대로 있습니다(코드로 다시 연결 가능).");
+  };
 
   const onExport = () => {
     const payload = buildExport(read, new Date().toISOString());
@@ -47,6 +85,11 @@ export default function BackupPage() {
     setPending(null);
     if (fileRef.current) fileRef.current.value = "";
     refresh();
+    if (pending.fromCode) {            // 코드로 불러왔으면 이 기기도 그 코드에 연결한다(이후 자동 동기화)
+      setCode(pending.fromCode, pending.updatedAt);
+      setCodeState(pending.fromCode);
+      setSyncedAt(pending.updatedAt || "");
+    }
     setDone(`${n}개 항목을 가져왔습니다. 각 페이지를 새로고침하면 반영됩니다.`);
   };
 
@@ -63,6 +106,52 @@ export default function BackupPage() {
             그레일 진행·파밍 체크·즐겨찾기·룬 재고는 <b>이 브라우저에만</b> 저장됩니다. 캐시를 지우거나 기기를 바꾸면
             사라집니다. JSON 파일 하나로 백업하고 다른 기기에서 복원하세요. <b>서버로 전송되지 않습니다.</b>
           </p>
+        </div>
+
+        <div className="card">
+          <div className="eyebrow blood">기기 간 동기화 (로그인 없음)</div>
+          <p className="zen">
+            코드 하나로 다른 기기와 이어집니다. <b>계정도 이메일도 필요 없습니다.</b> 코드를 연결해 두면 체크할 때마다
+            자동으로 서버에 올라가므로, 캐시 삭제·기기 변경·<b>Safari의 7일 자동 삭제</b>에도 기록이 살아남습니다.
+          </p>
+          {code ? (
+            <>
+              <div className="sy-code">{code}</div>
+              <div className="rp-toolbar">
+                <button className="btn btn-on" onClick={onCreateOrPush} disabled={busy}>지금 올리기</button>
+                <button
+                  className="chk-reset"
+                  onClick={() => { navigator.clipboard?.writeText(code); setDone("코드를 복사했습니다."); }}
+                >코드 복사</button>
+                <button className="chk-reset" onClick={onUnlink}>이 기기 연결 끊기</button>
+                {syncedAt && <span className="rw-mtag">마지막 동기화 {new Date(syncedAt).toLocaleString("ko-KR")}</span>}
+              </div>
+              <p className="zen sy-warn">
+                ⚠ <b>이 코드가 곧 열쇠입니다.</b> 아는 사람은 누구나 이 데이터를 보고 덮어쓸 수 있으니 공개하지 마세요.
+                따로 적어 두세요 — 코드를 잃으면 다른 기기에서 불러올 수 없습니다.
+              </p>
+            </>
+          ) : (
+            <div className="rp-toolbar">
+              <button className="btn btn-on" onClick={onCreateOrPush} disabled={busy || total === 0}>
+                동기화 코드 만들기
+              </button>
+              {total === 0 && <span className="rw-kr">먼저 수집·체크를 시작하세요.</span>}
+            </div>
+          )}
+
+          <div className="sy-pull">
+            <div className="bk-lbl">다른 기기의 코드로 불러오기</div>
+            <div className="rp-toolbar">
+              <input
+                className="sy-input"
+                placeholder="예: abcd2345-efgh6789-jkmn2345"
+                value={codeInput}
+                onChange={(e) => setCodeInput(e.target.value)}
+              />
+              <button className="btn btn-off" onClick={onPull} disabled={busy || !codeInput.trim()}>불러오기</button>
+            </div>
+          </div>
         </div>
 
         <div className="card">

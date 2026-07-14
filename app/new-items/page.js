@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { ITEMS } from "../../lib/items";
+import { schedulePush } from "../../lib/sync";
 
 const TRADERIE_BASE = "https://traderie.com/diablo2resurrected";
 
@@ -53,6 +54,7 @@ export default function NewItemsPage() {
       if (nx.has(en)) nx.delete(en);
       else nx.add(en);
       try { localStorage.setItem("fav:ni", JSON.stringify([...nx])); } catch {}
+      schedulePush();
       return nx;
     });
   }
