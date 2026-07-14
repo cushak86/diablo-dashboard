@@ -458,3 +458,8 @@ footer{text-align:center;color:#5a5a5a;font-size:12px;padding:10px 0 30px}
 .bk-warn{color:var(--clone)}
 .bk-done{color:#6ee7b7}
 .px-stale{margin-top:8px;border-left:2px solid rgba(242,153,74,.55);padding-left:10px;color:var(--clone)}
+
+/* ── 그레일 범위(scope) ── */
+.gr-warn{border-left:2px solid rgba(193,39,45,.6);padding-left:10px;color:#e0a3a3}
+.gr-notice{border-left:2px solid rgba(199,179,119,.6);padding-left:10px;color:var(--parch)}
+.gr-sub{margin-top:6px;font-size:12px;color:#8a8a8a}

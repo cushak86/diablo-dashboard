@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { buildExport, summarize, parseImport, applyImport } from "../../lib/backup";
+import { loadState, persist } from "../../lib/grail-store";
+import { scopeOf } from "../../lib/grail-collect";
 
 const read = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
 const write = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
@@ -38,6 +40,10 @@ export default function BackupPage() {
 
   const onApply = () => {
     const n = applyImport(pending, write);
+    // 백업 파일에 grail v1·v2가 함께 들었는데 서로 어긋날 수 있다(외부에서 손댄 파일).
+    // v2를 정본으로 채택하고 v1을 투영으로 다시 맞춘다. v1만 있는 구 백업이면 v2로 승격된다.
+    const st = loadState(read, scopeOf);
+    if (!st.readOnly) persist(write, st, scopeOf);
     setPending(null);
     if (fileRef.current) fileRef.current.value = "";
     refresh();

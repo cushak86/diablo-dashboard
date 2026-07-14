@@ -14,6 +14,7 @@ const store = (init = {}) => {
 };
 
 const SAMPLE = {
+  "grail:v2": JSON.stringify({ version: 2, scope: "new", ids: ["rune:Ber", "rw:Infinity"], mirror: "abc" }),
   "grail:v1": JSON.stringify(["rune:Ber", "rw:Infinity"]),
   "farm:v1": JSON.stringify({ countess: "2026-07-13", cows: "2026-W28" }),
   "fav:rw": JSON.stringify(["Infinity"]),
@@ -27,7 +28,7 @@ const t = (name, fn) => {
   catch (e) { failed++; console.log(`  FAIL ${name}\n       ${e.message}`); }
 };
 
-t("export — 5개 키를 담고 포맷 헤더를 붙인다", () => {
+t("export — 6개 키를 담고 포맷 헤더를 붙인다", () => {
   const s = store(SAMPLE);
   const out = buildExport(s.read, "2026-07-13T00:00:00Z");
   assert.equal(out.app, APP);
@@ -54,13 +55,14 @@ t("round-trip — export → import → 동일 복원", () => {
   const parsed = parseImport(text);
   assert.equal(parsed.ok, true);
   const dst = store();
-  assert.equal(applyImport(parsed, dst.write), 5);
+  assert.equal(applyImport(parsed, dst.write), 6);
   assert.deepEqual(dst.dump(), SAMPLE);
 });
 
 t("summarize — 키별 개수", () => {
   const s = store(SAMPLE);
   const sum = summarize(s.read);
+  assert.equal(sum.find((x) => x.key === "grail:v2").count, 2);
   assert.equal(sum.find((x) => x.key === "grail:v1").count, 2);
   assert.equal(sum.find((x) => x.key === "runes:v1").count, 2);
   assert.equal(sum.find((x) => x.key === "fav:ni").count, 0);
@@ -120,6 +122,31 @@ t("백업에 없는 키는 건드리지 않는다(부분 백업 복원)", () => 
   const parsed = parseImport(JSON.stringify({ app: APP, version: 1, data: { "fav:rw": ["Enigma"] } }));
   applyImport(parsed, dst.write);
   assert.deepEqual(JSON.parse(dst.dump()["grail:v1"]), ["기존"], "기존 그레일 진행이 보존돼야 한다");
+});
+
+// ── grail v1/v2 공존 4종 (critic #7) ──
+const V2 = (ids, scope = "new") => ({ version: 2, scope, ids, mirror: "x" });
+t("공존 ⓐ v1만 있는 구 백업 — 받아들인다(적용 후 페이지가 v2로 승격)", () => {
+  const r = parseImport(JSON.stringify({ app: APP, version: 1, data: { "grail:v1": ["u:A"] } }));
+  assert.equal(r.ok, true);
+});
+t("공존 ⓑ v2만 있는 백업", () => {
+  const r = parseImport(JSON.stringify({ app: APP, version: 1, data: { "grail:v2": V2(["u:A"]) } }));
+  assert.equal(r.ok, true);
+  assert.equal(r.entries.find((e) => e.key === "grail:v2").count, 1);
+});
+t("공존 ⓒ v1·v2 일치", () => {
+  const r = parseImport(JSON.stringify({ app: APP, version: 1, data: { "grail:v2": V2(["u:A"]), "grail:v1": ["u:A"] } }));
+  assert.equal(r.ok, true);
+  assert.equal(r.entries.length, 2);
+});
+t("공존 ⓓ v1·v2 불일치 — 둘 다 통과시키되 적용 후 페이지가 v2를 정본으로 정규화한다", () => {
+  const r = parseImport(JSON.stringify({ app: APP, version: 1, data: { "grail:v2": V2(["u:A", "u:B"]), "grail:v1": ["u:Z"] } }));
+  assert.equal(r.ok, true, "형식은 유효하므로 검증 단계에서 막지 않는다");
+});
+t("거부 — grail:v2의 scope가 허용 밖", () => {
+  const r = parseImport(JSON.stringify({ app: APP, version: 1, data: { "grail:v2": { version: 2, scope: "evil", ids: [] } } }));
+  assert.equal(r.ok, false);
 });
 
 console.log(failed === 0 ? "\n전부 통과" : `\n실패 ${failed}건`);
