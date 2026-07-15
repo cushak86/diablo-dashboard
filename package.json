@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "node test/rune-planner.test.mjs && node test/backup.test.mjs && node test/price-baseline.test.mjs && node test/grail-store.test.mjs && node test/grail-data.test.mjs && node test/sync-code.test.mjs"
+    "test": "node test/rune-planner.test.mjs && node test/backup.test.mjs && node test/price-baseline.test.mjs && node test/grail-store.test.mjs && node test/grail-data.test.mjs && node test/sync-code.test.mjs && node test/sync-pull.test.mjs"
   },
   "dependencies": {
     "@upstash/redis": "^1.38.0",

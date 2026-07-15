@@ -2,6 +2,7 @@ import "./globals.css";
 import TabNav from "./components/TabNav";
 import DonationButton from "./components/DonationButton";
 import PageTracker from "./components/PageTracker";
+import SyncBootstrap from "./components/SyncBootstrap";
 
 export const metadata = {
   metadataBase: new URL("https://diablo-dashboard-phi.vercel.app"),
@@ -50,6 +51,7 @@ export default function RootLayout({ children }) {
           </div>
           <TabNav />
         </header>
+        <SyncBootstrap />
         {children}
         <PageTracker />
       </body>
