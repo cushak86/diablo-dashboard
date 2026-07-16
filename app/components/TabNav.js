@@ -7,6 +7,7 @@ const TABS = [
   { href: "/terror-zone", label: "공역" },
   { href: "/new-items", label: "신규 아이템 (트레더리)" },
   { href: "/runewords", label: "룬워드" },
+  { href: "/build", label: "빌드 가이드" },
   { href: "/grail", label: "홀리 그레일" },
   { href: "/farming", label: "파밍 체크" },
   { href: "/prices", label: "시세 지수" },
