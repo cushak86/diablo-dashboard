@@ -8,3 +8,8 @@
 
 .vercel
 .env*
+
+# 상위 dev-sync .gitignore의 `build/` 규칙이 앱 라우트 `app/build/`(빌드 가이드 탭)를
+# 실수로 무시하는 것을 되돌린다. 이건 빌드 산출물이 아니라 소스 라우트다.
+!/app/build/
+!/app/build/**
