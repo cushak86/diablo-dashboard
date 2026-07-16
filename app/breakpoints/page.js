@@ -179,9 +179,10 @@ export default function BreakpointsPage() {
           <b>IAS(공격 속도)</b> — 공격 속도(IAS) 구간은 <b>무기 종류·무기 기본 속도(WSM)·스킬 애니메이션·광신
           (Fanaticism) 등 오라/스킬 보정</b>이 함께 얽혀 결정되므로, FCR/FHR처럼 하나의 정적 표로 만들 수 없습니다.
           실제 착용 무기와 스킬을 넣어{" "}
-          <a href="https://d2.maxroll.gg/" target="_blank" rel="noopener"
-            title="무기·스킬 조합별 IAS 프레임을 직접 계산">Maxroll D2 계산기 ↗</a>
-          로 직접 확인하세요.
+          <a href="https://d2r-tools.com/ias" target="_blank" rel="noopener"
+            title="무기·스킬 조합별 IAS 프레임을 직접 계산">D2R IAS 계산기 ↗</a>
+          로 직접 확인하세요. 악마술사는 <b>평타 기준만</b> 지원됩니다(현재 네크로맨서와 동일한 구간으로
+          처리) — 전용 스킬 프레임은 아직 공개된 데이터가 없습니다.
           <br />
           <b>출처</b> — 클래식 7개 직업: Maxroll.gg / 악마술사(Warlock): 3.0 패치 실측 표. 최신 3.2 기준.
         </div>
