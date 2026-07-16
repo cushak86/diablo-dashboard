@@ -9,6 +9,10 @@
 .vercel
 .env*
 
+# d2data 덤프 캐시 — 커밋하지 않는다. 블리자드 게임 데이터 추출물이고 배포 미러가 공개 repo다.
+# scripts/extract-farm-data.mjs 가 필요할 때 내려받는다. 커밋하는 건 파생 결과(lib/farm-targets.js)뿐.
+/.d2data
+
 # 상위 dev-sync .gitignore의 `build/` 규칙이 앱 라우트 `app/build/`(빌드 가이드 탭)를
 # 실수로 무시하는 것을 되돌린다. 이건 빌드 산출물이 아니라 소스 라우트다.
 !/app/build/

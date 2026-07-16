@@ -472,3 +472,29 @@ footer{text-align:center;color:#5a5a5a;font-size:12px;padding:10px 0 30px}
 .sy-pull{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
 .sy-input{flex:1 1 260px;min-width:0;height:32px;padding:0 10px;border:1px solid var(--line);background:var(--ink);
   color:#e6e0d4;border-radius:8px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:13px}
+
+/* ── 드롭 위치 ── */
+
+/* 유형 배지 '룬' — 기존 .ti-{cat}/.ti-tag-{cat} 쌍 관례에 카테고리 1개 추가.
+   색은 새로 고르지 않고 .rw-rune(209)·.cube-rune(289)의 룬 토큰 값을 그대로 씀. */
+.ti-rune{color:#e0c58a}
+.ti-tag-rune{color:#e0c58a;border-color:rgba(199,179,119,.32)}
+
+/* 공포의 영역 배지 — .rw-newtag(204) 기하 그대로, 색만 공역 탭 정체색(blood). */
+.fm-tz{margin-left:2px;font-size:10px;font-weight:800;letter-spacing:.06em;color:var(--bloodbright);
+  border:1px solid rgba(193,39,45,.45);background:rgba(139,26,26,.15);border-radius:6px;padding:1px 6px;
+  vertical-align:middle}
+
+/* 카드 내부 섹션 구분 — .up(71)·.px-form(417)이 쓰는 divider 값과 동일. */
+.fm-sec{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+
+/* 근거 접이식 — .gloss>summary의 padding(16px 20px)은 `.card.gloss`(카드 전체가 접이식) 전제라
+   카드 '내부'에 넣으려면 패딩만 재정의해야 함. 마커 제거·화살표 회전은 .gloss 그대로 상속.
+   .gloss.fm-why로 특이도를 올려 이 파일 내 배치 순서와 무관하게 이기도록 함. */
+.gloss.fm-why{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}
+.gloss.fm-why>summary{padding:0}
+.fm-why .gloss-body{padding:10px 0 0}
+
+/* 필터 칩을 <button>으로 쓰기 위한 보정 — .ti-chip은 <div> 전제로 쓰여(new-items) font-family가 없다.
+   button은 폰트를 상속하지 않아 브라우저 기본 폰트로 떨어진다. 새 탭은 대화형 요소에 <button>을 쓴다. */
+button.ti-chip{font-family:inherit;line-height:inherit}

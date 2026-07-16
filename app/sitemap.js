@@ -15,6 +15,7 @@ export default function sitemap() {
     { url: `${BASE}/cube`, lastModified: "2026-07-12", changeFrequency: "monthly", priority: 0.4 },
     { url: `${BASE}/grail`, lastModified: "2026-07-14", changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE}/farming`, lastModified: "2026-07-14", changeFrequency: "monthly", priority: 0.4 },
+    { url: `${BASE}/drops`, lastModified: "2026-07-16", changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/planner`, lastModified: "2026-07-14", changeFrequency: "monthly", priority: 0.5 },
   ];
   // 제외: /backup(개인 데이터 도구, layout.js에서 noindex) · /admin·/docs(비공개)

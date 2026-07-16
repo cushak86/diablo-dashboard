@@ -10,6 +10,7 @@ const TABS = [
   { href: "/build", label: "빌드 가이드" },
   { href: "/grail", label: "홀리 그레일" },
   { href: "/farming", label: "파밍 체크" },
+  { href: "/drops", label: "드롭 위치" },
   { href: "/prices", label: "시세 지수" },
   { href: "/cube", label: "호라드릭 큐브" },
   { href: "/planner", label: "룬 재고" },
