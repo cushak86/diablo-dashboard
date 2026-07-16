@@ -102,7 +102,7 @@ export default function BuildPage() {
 
               <div style={HD}>프레임 목표</div>
               <div style={{ ...ROW, marginBottom: 4 }}>
-                <span style={DIM}>FCR {bp(b.breakpointGoal.fcr, "물리 무관")} · FHR {bp(b.breakpointGoal.fhr, "검증중")}</span>
+                <span style={DIM}>시전 속도 {bp(b.breakpointGoal.fcr, "물리 무관")} · 타격 회복 {bp(b.breakpointGoal.fhr, "검증중")}</span>
               </div>
               <div style={ROW}>
                 <Link className="ti-btn alt" href="/breakpoints">프레임 기준 ↗</Link>
@@ -136,7 +136,7 @@ export default function BuildPage() {
 
         <div className="note">
           <b>수록 범위</b> — 8직업 대표 빌드 <b>{BUILDS.length}개</b>. 스킬·스탯·프레임 수치는 공개 공략
-          (Maxroll·Icy-Veins 등)을 <b>최소 2소스 교차검증</b>했습니다. 소스 간 수치가 갈리는 경우 카드 메모에
+          (맥스롤·아이시베인즈 등)을 <b>최소 2소스 교차검증</b>했습니다. 소스 간 수치가 갈리는 경우 카드 메모에
           양쪽을 병기했습니다.
           <br />
           <b>정확도</b> — 검증이 끝나지 않은 항목은 <b>검증중</b> 배지로 고지합니다(날조 금지). 신규 직업
