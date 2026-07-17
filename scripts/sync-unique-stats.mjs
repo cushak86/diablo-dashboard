@@ -44,11 +44,19 @@ for (const s of S.sets || []) for (const it of s.items || []) {
   byEN.set(`set|${it.name_en}`, it);
 }
 
-// 신규(items.js)는 grail-collect 가 `u:${en}`·`s:${en}` 로 id 를 만든다 — 그 규칙 그대로 맞춘다.
+// 신규(items.js)는 grail-collect 가 `u:`·`s:`·`j:`·`c:` 접두로 id 를 만든다 — 그 규칙 그대로 맞춘다.
+// ⚠ 분류가 우리와 mdb 가 다르다: 우리가 `charm` 으로 둔 선더 참(잠복하는 …)을 mdb 는 **uniques.json** 에
+//   `PreCrafted …`(name_en=`Latent …`) 로 담는다. 그래서 charm·jewel 도 유니크 축(byEN)으로 조회한다.
+//   붙는 건 붙고 안 붙는 건 miss 로 세어 알린다 — 억지로 맞추지 않는다.
+const forItems = (cat, prefix) =>
+  ITEMS.filter((i) => i.cat === cat && (cat !== "set" || i.slug))
+    .map((i) => ({ id: `${prefix}${i.en}`, cat: cat === "set" ? "set" : "unique", key: i.en, idx: byEN }));
 const targets = [
   ...CLASSIC.map((o) => ({ id: o.id, cat: o.cat, key: o.en, idx: bySK })),
-  ...ITEMS.filter((i) => i.cat === "unique").map((i) => ({ id: `u:${i.en}`, cat: "unique", key: i.en, idx: byEN })),
-  ...ITEMS.filter((i) => i.cat === "set" && i.slug).map((i) => ({ id: `s:${i.en}`, cat: "set", key: i.en, idx: byEN })),
+  ...forItems("unique", "u:"),
+  ...forItems("set", "s:"),
+  ...forItems("jewel", "j:"),
+  ...forItems("charm", "c:"),
 ];
 
 const out = {};
