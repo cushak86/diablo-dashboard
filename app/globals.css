@@ -384,6 +384,12 @@ footer{text-align:center;color:#5a5a5a;font-size:12px;padding:10px 0 30px}
 .chk-hint{font-size:12px;color:#8a8a8a;margin-top:8px}
 .chk-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}
 .grail-grid{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));margin-top:12px}
+/* 체크 토글과 옵션(ⓘ)은 다른 동작이라 버튼이 둘이다 — 버튼 중첩을 피하려고 행을 감쌌다. */
+.chk-row{display:flex;align-items:stretch;gap:6px;min-width:0}
+.chk-row .chk{flex:1;min-width:0}
+.chk-info{flex-shrink:0;width:32px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);
+  color:#8a8a8a;font-size:13px;cursor:pointer;font-family:inherit}
+.chk-info:hover{color:var(--parch);border-color:rgba(199,179,119,.35)}
 .chk{display:flex;align-items:center;gap:10px;width:100%;text-align:left;cursor:pointer;font:inherit;
   background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:9px 12px;color:#cfcfcf;
   transition:border-color .12s,background .12s}

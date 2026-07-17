@@ -4,6 +4,7 @@ import { useMemo, useState, useEffect } from "react";
 import { COLLECT, scopeOf } from "../../lib/grail-collect";
 import { loadState, persist, inScope, SCOPES } from "../../lib/grail-store";
 import { schedulePush } from "../../lib/sync";
+import { UNIQUE_STATS } from "../../lib/unique-stats";
 
 const CHO = ["ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
 function chosung(s) {
@@ -52,6 +53,7 @@ export default function GrailPage() {
   const [scope, setScope] = useState("new");     // 기본 new — 기존 사용자의 화면·진행률이 그대로 유지된다
   const [readOnly, setReadOnly] = useState(false);
   const [noticeSeen, setNoticeSeen] = useState(true);  // 마운트 전엔 안내를 띄우지 않는다
+  const [openItem, setOpenItem] = useState(null);      // 옵션 모달로 연 항목
   const [query, setQuery] = useState("");
   const [activeCat, setActiveCat] = useState("all");
   const [todoOnly, setTodoOnly] = useState(false);
@@ -235,22 +237,37 @@ export default function GrailPage() {
               <div className="grail-grid">
                 {items.map((x) => {
                   const on = collected.has(x.id);
+                  const stats = UNIQUE_STATS[x.id];
                   return (
-                    <button
-                      type="button"
-                      key={x.id}
-                      className={`chk ${on ? "on" : ""}`}
-                      aria-pressed={on}
-                      onClick={() => toggle(x.id)}
-                    >
-                      <span className="chk-box">✓</span>
-                      <span className="chk-main">
-                        <span className="chk-kr">{x.kr}</span>
-                        {/* enDisp = D2R 공식 표시명. x.en 은 게임 내부 식별자(`Cutthroat1` 같은 것)라
-                            그대로 뿌리면 사용자에게 내부 이름이 노출된다. 표시명이 없으면 둘이 같다는 뜻. */}
-                        {(x.enDisp || x.en) !== x.kr && <span className="chk-sub">{x.enDisp || x.en}</span>}
-                      </span>
-                    </button>
+                    // 행을 감싸는 이유: 체크 토글과 옵션 보기는 서로 다른 동작이라 버튼이 둘이어야 하는데,
+                    // 버튼 안에 버튼을 넣을 수 없다(HTML 위반 · 키보드·스크린리더도 깨진다).
+                    <div className="chk-row" key={x.id}>
+                      <button
+                        type="button"
+                        className={`chk ${on ? "on" : ""}`}
+                        aria-pressed={on}
+                        onClick={() => toggle(x.id)}
+                      >
+                        <span className="chk-box">✓</span>
+                        <span className="chk-main">
+                          <span className="chk-kr">{x.kr}</span>
+                          {/* enDisp = D2R 공식 표시명. x.en 은 게임 내부 식별자(`Cutthroat1` 같은 것)라
+                              그대로 뿌리면 사용자에게 내부 이름이 노출된다. 표시명이 없으면 둘이 같다는 뜻. */}
+                          {(x.enDisp || x.en) !== x.kr && <span className="chk-sub">{x.enDisp || x.en}</span>}
+                        </span>
+                      </button>
+                      {/* 옵션이 있는 항목만 버튼을 낸다. 없는 걸 눌렀다 빈 창이 뜨는 게 최악이다. */}
+                      {stats && (
+                        <button
+                          type="button"
+                          className="chk-info"
+                          aria-label={`${x.kr} 옵션 보기`}
+                          onClick={() => setOpenItem(x)}
+                        >
+                          ⓘ
+                        </button>
+                      )}
+                    </div>
                   );
                 })}
               </div>
@@ -262,11 +279,35 @@ export default function GrailPage() {
         )}
 
         <div className="note">
-          <b>수록 범위</b> — 악마술사의 군림 신규 고유·세트·주얼·파괴 부적, 33룬, 룬워드 목록을
-          커뮤니티 자료 기반으로 정리했습니다(<b>비공식 · 검증 필요</b>). 클래식 전체 고유/세트는
-          현재 데이터셋에 없어 제외했으며, 수치·수록 항목은 갱신될 수 있습니다.
+          <b>수록 범위</b> — 악마술사의 군림 신규 고유·세트·주얼·파괴 부적, 33룬, 룬워드에
+          <b> 클래식 고유 385 · 세트 부위 127</b>을 더해 <b>682</b>항목입니다. 이름과 옵션은
+          D2R 공식 문자열에서 생성했고(<b>diablo-mdb</b>), 수록 항목은 갱신될 수 있습니다.
+          옵션은 <b>ⓘ</b>를 누르면 보입니다.
         </div>
       </div>
+
+      {/* 옵션 모달 — /runewords 의 .rw-tip 구조·CSS 를 그대로 재사용한다(새 디자인 언어를 만들지 않는다). */}
+      {openItem && (
+        <div className="rw-tip-overlay" onClick={() => setOpenItem(null)}>
+          <div className="rw-tip" onClick={(e) => e.stopPropagation()}>
+            <button type="button" className="rw-tip-close" aria-label="닫기" onClick={() => setOpenItem(null)}>
+              ×
+            </button>
+            <div className="rw-tip-name">{openItem.kr}</div>
+            <div className="rw-tip-kr">{openItem.enDisp || openItem.en}</div>
+            <div className="rw-tip-type">{openItem.cat === "set" ? "세트" : "고유"}</div>
+            {openItem.baseKr && <div className="rw-tip-base">{openItem.baseKr}</div>}
+            <ul className="rw-tip-stats">
+              {UNIQUE_STATS[openItem.id].map((s, i) => (
+                <li key={i}>{s}</li>
+              ))}
+            </ul>
+            <div className="rw-tip-req">
+              옵션은 D2R 공식 문자열 그대로입니다. 값이 굴러가는 항목은 범위로 표시됩니다.
+            </div>
+          </div>
+        </div>
+      )}
     </main>
   );
 }
