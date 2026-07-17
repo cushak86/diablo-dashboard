@@ -4,6 +4,16 @@ import { useMemo, useState, useEffect } from "react";
 import { ITEMS } from "../../lib/items";
 import { schedulePush } from "../../lib/sync";
 import { indexOf, matches } from "../../lib/item-search";
+import { UNIQUE_STATS } from "../../lib/unique-stats";
+import ItemTip, { StatList } from "../components/ItemTip";
+
+// 옵션은 그레일과 같은 축으로 조회한다 — grail-collect 가 `u:`·`s:`·`j:`·`c:` 접두로 id 를 만든다.
+// 룬워드·조각상·소모품·베이스(34종)는 유니크가 아니라 옵션이 없다 — 그런 항목엔 버튼을 안 낸다.
+const STAT_PREFIX = { unique: "u:", set: "s:", jewel: "j:", charm: "c:" };
+const statsOf = (it) => {
+  const p = STAT_PREFIX[it.cat];
+  return p ? UNIQUE_STATS[`${p}${it.en}`] : null;
+};
 
 const TRADERIE_BASE = "https://traderie.com/diablo2resurrected";
 
@@ -27,6 +37,7 @@ export default function NewItemsPage() {
   const [toast, setToast] = useState("");
   const [favs, setFavs] = useState(() => new Set());
   const [favOnly, setFavOnly] = useState(false);
+  const [openItem, setOpenItem] = useState(null);   // 옵션 모달로 연 항목
 
   // 즐겨찾기: 마운트 후 localStorage 로드(초기값 빈 Set → 하이드레이션 안전).
   useEffect(() => {
@@ -139,6 +150,17 @@ export default function NewItemsPage() {
                   >
                     {favs.has(it.en) ? "★" : "☆"}
                   </button>
+                  {/* 옵션이 있는 항목만. 없는 걸 눌렀다 빈 창이 뜨는 게 최악이다. */}
+                  {statsOf(it) && (
+                    <button
+                      type="button"
+                      className="ti-btn alt"
+                      aria-label={`${it.kr} 옵션 보기`}
+                      onClick={() => setOpenItem(it)}
+                    >
+                      옵션
+                    </button>
+                  )}
                   {prod && (
                     <a className="ti-btn" href={prod} target="_blank" rel="noopener">
                       트레더리 ↗
@@ -168,6 +190,18 @@ export default function NewItemsPage() {
           것입니다. 한글명은 공식 한국어 클라이언트 표기 기준입니다.
         </div>
       </div>
+      {/* 껍데기는 공용(app/components/ItemTip) — /grail·/runewords 와 같은 창이다. */}
+      <ItemTip
+        open={!!openItem}
+        onClose={() => setOpenItem(null)}
+        title={openItem?.kr}
+        subtitle={openItem?.en}
+        type={openItem ? CAT_LABEL[openItem.cat] : ""}
+        footer="옵션은 D2R 공식 문자열 그대로입니다. 값이 굴러가는 항목은 범위로 표시됩니다."
+      >
+        {openItem?.meta && <div className="rw-tip-base">{openItem.meta}</div>}
+        <StatList lines={openItem ? statsOf(openItem) : null} />
+      </ItemTip>
       {toast && <div className="ti-toast show">{toast}</div>}
     </main>
   );

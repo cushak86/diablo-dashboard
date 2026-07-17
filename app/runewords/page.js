@@ -1,10 +1,11 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { runewordCubeCost } from "../../lib/cube";
 import { RW } from "../../lib/runewords";
 import { schedulePush } from "../../lib/sync";
 import { indexOf, matches } from "../../lib/item-search";
+import ItemTip, { StatList } from "../components/ItemTip";
 
 const CATS = [
   ["all", "전체"], ["new", "신규 3.x"], ["weapon", "무기"], ["armor", "갑옷"], ["helm", "투구"], ["shield", "방패"],
@@ -27,8 +28,6 @@ export default function RunewordsPage() {
   const [sort, setSort] = useState("default");
   const [favs, setFavs] = useState(() => new Set());
   const [favOnly, setFavOnly] = useState(false);
-  const lastFocusRef = useRef(null);
-  const dialogRef = useRef(null);
 
   function copy(text) {
     const done = () => {
@@ -61,25 +60,8 @@ export default function RunewordsPage() {
     });
   }
 
-  function openTip(r, e) {
-    lastFocusRef.current = e.currentTarget;
-    setOpenRW(r);
-  }
-
-  useEffect(() => {
-    if (openRW) {
-      const onKey = (e) => {
-        if (e.key === "Escape") setOpenRW(null);
-      };
-      document.addEventListener("keydown", onKey);
-      dialogRef.current?.focus();
-      return () => document.removeEventListener("keydown", onKey);
-    }
-    if (lastFocusRef.current) {
-      lastFocusRef.current.focus();
-      lastFocusRef.current = null;
-    }
-  }, [openRW]);
+  // ESC·포커스 복귀·오버레이는 ItemTip 이 처리한다 — 여기서 또 하면 리스너가 이중으로 붙는다.
+  const openTip = (r) => setOpenRW(r);
 
   const hits = useMemo(() => {
     const raw = query.trim();
@@ -157,11 +139,11 @@ export default function RunewordsPage() {
               role="button"
               tabIndex={0}
               aria-label={`${r.kr} ${r.en} 전체 옵션 보기`}
-              onClick={(e) => openTip(r, e)}
+              onClick={() => openTip(r)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
-                  openTip(r, e);
+                  openTip(r);
                 }
               }}
             >
@@ -222,26 +204,18 @@ export default function RunewordsPage() {
         </div>
       </div>
 
-      {openRW && (
-        <div className="rw-tip-overlay" onClick={() => setOpenRW(null)}>
-          <div
-            className="rw-tip"
-            role="dialog"
-            aria-modal="true"
-            aria-label={`${openRW.kr} 룬워드 전체 옵션`}
-            ref={dialogRef}
-            tabIndex={-1}
-            onClick={(e) => e.stopPropagation()}
-          >
-            <button type="button" className="rw-tip-close" aria-label="닫기" onClick={() => setOpenRW(null)}>
-              ×
-            </button>
-            <div className="rw-tip-name">
-              {openRW.kr}
-              {openRW.isNew && " · NEW 3.x"}
-            </div>
-            <div className="rw-tip-kr">{openRW.en}</div>
-            <div className="rw-tip-type">룬워드</div>
+      {/* 껍데기는 공용(app/components/ItemTip) — ESC·포커스 복귀·오버레이가 거기 있다.
+          속은 이 탭 고유다: 룬 조합·복사·큐브 파밍 난이도. footer 를 안 쓰는 이유는
+          요구 레벨 **뒤에** 큐브 블록이 와야 해서다(footer 는 항상 마지막이다). */}
+      <ItemTip
+        open={!!openRW}
+        onClose={() => setOpenRW(null)}
+        title={openRW ? `${openRW.kr}${openRW.isNew ? " · NEW 3.x" : ""}` : ""}
+        subtitle={openRW?.en}
+        type="룬워드"
+      >
+        {openRW && (
+          <>
             <div className="rw-tip-base">{openRW.base} · {openRW.sockets}소켓</div>
             <div className="rw-tip-runes">
               {openRW.runes.map((rune, i) => (
@@ -249,11 +223,7 @@ export default function RunewordsPage() {
               ))}
               <button type="button" className="rw-copy" onClick={() => copy(openRW.runes.join(""))}>복사</button>
             </div>
-            <ul className="rw-tip-stats">
-              {openRW.stats.map((s, i) => (
-                <li key={i}>{s}</li>
-              ))}
-            </ul>
+            <StatList lines={openRW.stats} />
             <div className="rw-tip-req">요구 레벨 {openRW.clvl}</div>
             {cubeCost && (
               <div className="rw-tip-cube">
@@ -270,9 +240,9 @@ export default function RunewordsPage() {
                 <a className="ti-btn alt rw-tip-cube-link" href="/cube">큐브 조합기 열기 ↗</a>
               </div>
             )}
-          </div>
-        </div>
-      )}
+          </>
+        )}
+      </ItemTip>
 
       {toast && <div className="ti-toast show">{toast}</div>}
     </main>

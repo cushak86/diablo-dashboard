@@ -6,6 +6,7 @@ import { loadState, persist, inScope, SCOPES } from "../../lib/grail-store";
 import { schedulePush } from "../../lib/sync";
 import { UNIQUE_STATS } from "../../lib/unique-stats";
 import { indexOf, matches } from "../../lib/item-search";
+import ItemTip, { StatList } from "../components/ItemTip";
 
 // 검색 인덱스 — 무엇을 왜 넣는지:
 //   en    : 내부 식별자(`Cutthroat1`) + 표시명(`Bartuc's Cut-Throat`) + 베이스 영문. 셋 다로 찾힌다.
@@ -269,28 +270,18 @@ export default function GrailPage() {
         </div>
       </div>
 
-      {/* 옵션 모달 — /runewords 의 .rw-tip 구조·CSS 를 그대로 재사용한다(새 디자인 언어를 만들지 않는다). */}
-      {openItem && (
-        <div className="rw-tip-overlay" onClick={() => setOpenItem(null)}>
-          <div className="rw-tip" onClick={(e) => e.stopPropagation()}>
-            <button type="button" className="rw-tip-close" aria-label="닫기" onClick={() => setOpenItem(null)}>
-              ×
-            </button>
-            <div className="rw-tip-name">{openItem.kr}</div>
-            <div className="rw-tip-kr">{openItem.enDisp || openItem.en}</div>
-            <div className="rw-tip-type">{openItem.cat === "set" ? "세트" : "고유"}</div>
-            {openItem.baseKr && <div className="rw-tip-base">{openItem.baseKr}</div>}
-            <ul className="rw-tip-stats">
-              {UNIQUE_STATS[openItem.id].map((s, i) => (
-                <li key={i}>{s}</li>
-              ))}
-            </ul>
-            <div className="rw-tip-req">
-              옵션은 D2R 공식 문자열 그대로입니다. 값이 굴러가는 항목은 범위로 표시됩니다.
-            </div>
-          </div>
-        </div>
-      )}
+      {/* 껍데기는 공용(app/components/ItemTip). 속만 이 탭 것이다. */}
+      <ItemTip
+        open={!!openItem}
+        onClose={() => setOpenItem(null)}
+        title={openItem?.kr}
+        subtitle={openItem ? openItem.enDisp || openItem.en : ""}
+        type={openItem?.cat === "set" ? "세트" : "고유"}
+        footer="옵션은 D2R 공식 문자열 그대로입니다. 값이 굴러가는 항목은 범위로 표시됩니다."
+      >
+        {openItem?.baseKr && <div className="rw-tip-base">{openItem.baseKr}</div>}
+        <StatList lines={openItem ? UNIQUE_STATS[openItem.id] : null} />
+      </ItemTip>
     </main>
   );
 }
