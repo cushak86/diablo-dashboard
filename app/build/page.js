@@ -17,6 +17,10 @@ const ROW = { display: "flex", flexWrap: "wrap", gap: 8, alignItems: "center" };
 // 브레이크포인트 표기: null=물리빌드라 무관/미검증, 숫자=%, 문자열=그대로.
 const bp = (v, whenNull) => (v === null || v === undefined ? whenNull : typeof v === "number" ? `${v}%` : v);
 
+// 스킬 포인트 배지: 숫자 20=마스터(20/20), 그 외 숫자=N점, 문자열=그대로. null/undefined=미표기.
+const ptLabel = (p) => (p === null || p === undefined ? null : typeof p === "number" ? (p >= 20 ? `${p}/20` : `${p}점`) : p);
+const PT = { marginLeft: 6, fontSize: 10, fontWeight: 800, color: "var(--gold)", border: "1px solid #4a4030", borderRadius: 4, padding: "0 5px", whiteSpace: "nowrap" };
+
 export default function BuildPage() {
   const [cls, setCls] = useState("all");
   const classes = useMemo(() => allClasses(), []);
@@ -80,6 +84,7 @@ export default function BuildPage() {
                   {b.skills.map((s) => (
                     <li key={s.name}>
                       <b style={{ color: "var(--parch)" }}>{s.name}</b>
+                      {ptLabel(s.points) && <span style={PT}>{ptLabel(s.points)}</span>}
                       {s.note && <span> — {s.note}</span>}
                     </li>
                   ))}
