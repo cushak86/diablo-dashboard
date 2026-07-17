@@ -22,12 +22,15 @@ function norm(s) {
   return (s || "").toLowerCase().replace(/['’\-\s·]/g, "");
 }
 
+// _aka = 옛 한국어 표기. 2026-07-17에 이름 정본을 diablo-mdb로 맞추며 37개가 바뀌었다(정신→영혼 등).
+// 표시는 새 이름이지만 사용자는 옛 이름으로 검색하므로 도달 경로를 남긴다. 초성도 양쪽 다.
 const AUG = RW.map((r) => ({
   ...r,
   _kr: norm(r.kr),
   _en: norm(r.en),
+  _aka: norm(r.aka || ""),
   _runes: norm(r.runes.join("")),
-  _cho: chosung(r.kr.replace(/\s/g, "")),
+  _cho: chosung(r.kr.replace(/\s/g, "")) + (r.aka ? " " + chosung(r.aka.replace(/\s/g, "")) : ""),
 }));
 
 export default function RunewordsPage() {
@@ -102,7 +105,7 @@ export default function RunewordsPage() {
       if (activeCat !== "all" && activeCat !== "new" && !r.cats.includes(activeCat)) return false;
       if (!nq && !isCho) return true;
       if (isCho) return r._cho.includes(raw.replace(/\s/g, ""));
-      return r._kr.includes(nq) || r._en.includes(nq) || r._runes.includes(nq);
+      return r._kr.includes(nq) || r._en.includes(nq) || r._aka.includes(nq) || r._runes.includes(nq);
     });
     if (sort === "level") arr.sort((a, b) => a.clvl - b.clvl);
     else if (sort === "sockets") arr.sort((a, b) => a.sockets - b.sockets);
