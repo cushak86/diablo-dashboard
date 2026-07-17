@@ -25,6 +25,11 @@ if (!root || !fs.existsSync(path.join(root, "data/uniques.json"))) {
   process.exit(1);
 }
 
+import { execSync } from "node:child_process";
+// mdb 커밋 해시를 파생 파일에 남긴다 — "이 값이 어느 시점 mdb 에서 왔나"를 나중에 반드시 묻게 된다(mdb 요청).
+let mdbRev = "unknown";
+try { mdbRev = execSync("git log --format=%h -1", { cwd: root }).toString().trim(); } catch {}
+
 const U = JSON.parse(fs.readFileSync(path.join(root, "data/uniques.json"), "utf8"));
 const S = JSON.parse(fs.readFileSync(path.join(root, "data/sets.json"), "utf8"));
 const { CLASSIC } = await import(path.join(process.cwd(), "lib/grail-classic.js"));
@@ -36,12 +41,36 @@ const { ITEMS } = await import(path.join(process.cwd(), "lib/items.js"));
 //     (mdb 의 그 항목 source_key 는 `Unique Warlock Helm` 이다. items.js 는 사람이 게임 화면에서
 //      옮겨 적어 표시명이 들어갔다.)
 // 축을 하나로 통일하려 들면 한쪽이 반드시 샌다. 실측: 각자의 축으로 512/512 · 20/20 붙는다.
+//
+// 🔴 그러나 **어느 축도 유일하지 않다**(2026-07-17 mdb 회신 Q9). 레인보우 패싯 8종은
+//    `source_key`·`name_en` 이 **전부 `Rainbow Facet`** 이다 — 게임에서도 이름이 같고
+//    **원소(화염/냉기/번개/독) × 발동(사망/레벨업)** 으로만 갈린다. 유일한 건 mdb `id` 뿐이다.
+//    Map 에 그냥 넣으면 마지막 하나가 이겨서 **8종이 같은 옵션을 보여준다**(실제로 그렇게 배포했었다).
+//    → 값을 **배열로 모으고**, 후보가 2개 이상이면 아래 §패싯 규칙으로 가른다. 못 가르면 **버린다**(틀린 걸 보여주느니).
+const push = (map, k, v) => { if (!map.has(k)) map.set(k, []); map.get(k).push(v); };
 const bySK = new Map();   // 내부 식별자 축 (클래식용)
 const byEN = new Map();   // 표시명 축 (3.x 신규용)
-for (const u of U.uniques) { bySK.set(`unique|${u.source_key}`, u); byEN.set(`unique|${u.name_en}`, u); }
+for (const u of U.uniques) { push(bySK, `unique|${u.source_key}`, u); push(byEN, `unique|${u.name_en}`, u); }
 for (const s of S.sets || []) for (const it of s.items || []) {
-  bySK.set(`set|${it.source_key}`, it);
-  byEN.set(`set|${it.name_en}`, it);
+  push(bySK, `set|${it.source_key}`, it);
+  push(byEN, `set|${it.name_en}`, it);
+}
+
+// §패싯 규칙 — 우리 id 가 이미 구분을 담고 있다: `u:Rainbow Facet (jewel, ltng/death)`
+// mdb 쪽은 stat **code** 로 갈린다: `dmg-{ltng|cold|fire|pois}` × `{death|levelup}-skill`.
+// 한글 텍스트가 아니라 코드로 잇는다(텍스트는 번역이 바뀌면 썩는다).
+const ELEM = ["ltng", "cold", "fire", "pois"];
+function narrow(cands, ourId) {
+  if (cands.length === 1) return cands[0];
+  const tag = /\(([^)]*)\)\s*$/.exec(ourId)?.[1] || "";        // "jewel, ltng/death"
+  const elem = ELEM.find((e) => tag.includes(e));
+  const trig = tag.includes("levelup") ? "levelup-skill" : tag.includes("death") ? "death-skill" : null;
+  if (!elem || !trig) return null;                              // 우리 id 에 단서가 없으면 포기
+  const hit = cands.filter((u) => {
+    const codes = (u.stats || []).map((s) => s.code);
+    return codes.includes(`dmg-${elem}`) && codes.includes(trig);
+  });
+  return hit.length === 1 ? hit[0] : null;                      // 1건으로 좁혀질 때만 채택
 }
 
 // 신규(items.js)는 grail-collect 가 `u:`·`s:`·`j:`·`c:` 접두로 id 를 만든다 — 그 규칙 그대로 맞춘다.
@@ -60,10 +89,12 @@ const targets = [
 ];
 
 const out = {};
-let shown = 0, hidden = 0, noText = 0, miss = 0;
+let shown = 0, hidden = 0, noText = 0, miss = 0, ambiguous = 0;
 for (const o of targets) {
-  const m = o.idx.get(`${o.cat}|${o.key}`);
-  if (!m) { miss++; continue; }
+  const cands = o.idx.get(`${o.cat}|${o.key}`);
+  if (!cands) { miss++; continue; }
+  const m = narrow(cands, o.id);
+  if (!m) { ambiguous++; console.warn(`  ⚠️ 후보 ${cands.length}건을 못 가름 — 버림: ${o.id}`); continue; }
   const lines = [];
   for (const st of m.stats || []) {
     if (st.displayed === false) { hidden++; continue; }   // 게임이 옵션으로 안 보여주는 줄
@@ -75,7 +106,7 @@ for (const o of targets) {
 }
 
 const body = `// 자동 생성 — 직접 수정하지 마라. \`node scripts/sync-unique-stats.mjs <mdb-clone>\` 로 다시 만든다.
-// 출처: diablo-mdb (D2R 설치본 스트링 빌드 3.2.92777). uniques _generated=${U._generated} · sets _generated=${S._generated}
+// 출처: diablo-mdb ${mdbRev} (D2R 설치본 스트링 빌드 3.2.92777). uniques _generated=${U._generated} · sets _generated=${S._generated}
 //
 // 그레일 id → 옵션 줄(한글). mdb 가 렌더한 \`stats[].text\` 원문이다 — 우리가 조립하지 않는다(descfunc 함정).
 // \`displayed:false\` 줄은 제외했다(게임도 옵션으로 안 보여준다). 한 속성이 여러 줄인 것(지옥포의 화염·번개·냉기)은
@@ -85,5 +116,5 @@ export const UNIQUE_STATS = ${JSON.stringify(out, null, 0)};
 fs.writeFileSync(path.join(process.cwd(), "lib/unique-stats.js"), body);
 
 console.log(`mdb: uniques=${U._generated}`);
-console.log(`\n항목 ${Object.keys(out).length}/${targets.length} (클래식 ${CLASSIC.length} + 3.x 신규 ${targets.length - CLASSIC.length}) · 표시 줄 ${shown} · 숨김(displayed:false) ${hidden} · text없음 ${noText} · 미매칭 ${miss}`);
+console.log(`\n항목 ${Object.keys(out).length}/${targets.length} (클래식 ${CLASSIC.length} + 3.x 신규 ${targets.length - CLASSIC.length}) · 표시 줄 ${shown} · 숨김(displayed:false) ${hidden} · text없음 ${noText} · 미매칭 ${miss} · 모호해서버림 ${ambiguous}`);
 console.log(`크기: ${(body.length / 1024).toFixed(0)}KB`);
