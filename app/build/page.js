@@ -21,6 +21,16 @@ const bp = (v, whenNull) => (v === null || v === undefined ? whenNull : typeof v
 const ptLabel = (p) => (p === null || p === undefined ? null : typeof p === "number" ? (p >= 20 ? `${p}/20` : `${p}점`) : p);
 const PT = { marginLeft: 6, fontSize: 10, fontWeight: 800, color: "var(--gold)", border: "1px solid #4a4030", borderRadius: 4, padding: "0 5px", whiteSpace: "nowrap" };
 
+// 티어 배지 — 등급색. S=금 · A=초록 · B=파랑 · C=회 · D/F=적. "S*"·"—"도 앞글자로 판정.
+const tierClass = (t) => "bd-t-" + (t?.[0] || "x").toLowerCase();
+const TIER_COLOR = { s: "#e8c15a", a: "#68c07a", b: "#5aa9e8", c: "#9a9a9a", d: "#c1554a", f: "#c1554a", x: "#6a6a6a" };
+const tierStyle = (t) => {
+  const c = TIER_COLOR[(t?.[0] || "x").toLowerCase()] || TIER_COLOR.x;
+  return { marginLeft: 8, fontSize: 13, fontWeight: 900, color: c, border: `1.5px solid ${c}`, borderRadius: 6, padding: "0 7px", verticalAlign: "middle" };
+};
+// 티어 순서(요약 그리드 정렬). S*는 S 옆.
+const TIER_RANK = { S: 0, "S*": 1, A: 2, B: 3, C: 4, D: 5, F: 6, "—": 9 };
+
 export default function BuildPage() {
   const [cls, setCls] = useState("all");
   const classes = useMemo(() => allClasses(), []);
@@ -36,6 +46,43 @@ export default function BuildPage() {
             8직업 대표 빌드를 카드로 정리했습니다. 스킬 찍는 <b>우선순위</b>, 스탯 분배 방향(힘/민/체/에),
             핵심 <b>룬워드</b>·용병 세팅까지. 카드의 룬워드는 <b>룬워드</b> 탭, 프레임 목표는 <b>프레임 기준</b> 탭,
             룬 확보는 <b>룬 재고</b> 탭으로 이어집니다.
+          </p>
+        </div>
+
+        {/* 재미로 보는 티어표 — maxroll S14 종합 티어 기준 그리드. 클릭 시 해당 클래스 필터. */}
+        <div className="card">
+          <div className="eyebrow gold">재미로 보는 티어표</div>
+          <p className="zen" style={{ marginBottom: 10 }}>
+            <b>maxroll 시즌14</b> 등급을 옮긴 참고표입니다(<b>공식 순위 아님 · 재미로</b>). 아래는 <b>종합</b> 기준이며,
+            카드마다 <b>래더 시작 · 밀집 청소</b> 등급도 함께 표시됩니다 — 같은 빌드도 축마다 크게 다릅니다.
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {["S", "S*", "A", "B", "C", "D", "F"].map((tier) => {
+              const inTier = BUILDS.filter((b) => b.tier?.overall === tier);
+              if (!inTier.length) return null;
+              const c = TIER_COLOR[tier[0].toLowerCase()] || TIER_COLOR.x;
+              return (
+                <div key={tier} style={{ display: "flex", gap: 10, alignItems: "flex-start" }}>
+                  <span style={{ ...tierStyle(tier), marginLeft: 0, minWidth: 34, textAlign: "center", flexShrink: 0 }}>{tier}</span>
+                  <div style={{ display: "flex", flexWrap: "wrap", gap: 6, paddingTop: 2 }}>
+                    {inTier.map((b) => (
+                      <button
+                        key={b.id}
+                        type="button"
+                        className="rw-mtag"
+                        style={{ cursor: "pointer", borderColor: `${c}55` }}
+                        onClick={() => setCls(b.class)}
+                      >
+                        {b.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+          <p style={{ ...DIM, marginTop: 10 }}>
+            무술(모자이크)은 <b>S*</b> — 모자이크 변형 기준입니다(순수 불사조는 D). <b>—</b>는 해당 축 미등재(낮음이 아니라 데이터 없음).
           </p>
         </div>
 
@@ -68,6 +115,8 @@ export default function BuildPage() {
                 <div className="rw-name">
                   {b.name}
                   {b.verify && <span className="rw-newtag">{b.verify}</span>}
+                  {/* 종합 티어를 이름 옆에 크게 — 등급색은 S~D 로 갈린다. */}
+                  {b.tier && <span style={tierStyle(b.tier.overall)}>{b.tier.overall}</span>}
                 </div>
                 <div className="rw-kr">{b.class}</div>
               </div>
@@ -76,6 +125,12 @@ export default function BuildPage() {
                 {b.tags.map((t) => (
                   <span className="rw-mtag" key={t}>{t}</span>
                 ))}
+                {/* 3축 병기 — 종합만으론 왜곡(소용돌이 종합C/밀집F). maxroll S14 근거. */}
+                {b.tier && (
+                  <span className="rw-mtag bd-tier-axes">
+                    종합 {b.tier.overall} · 래더 {b.tier.ladder} · 밀집 {b.tier.density}
+                  </span>
+                )}
               </div>
 
               <div style={HD}>스킬 우선순위</div>
