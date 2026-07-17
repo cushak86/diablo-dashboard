@@ -5,33 +5,20 @@ import { COLLECT, scopeOf } from "../../lib/grail-collect";
 import { loadState, persist, inScope, SCOPES } from "../../lib/grail-store";
 import { schedulePush } from "../../lib/sync";
 import { UNIQUE_STATS } from "../../lib/unique-stats";
+import { indexOf, matches } from "../../lib/item-search";
 
-const CHO = ["ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
-function chosung(s) {
-  let out = "";
-  for (const ch of s) {
-    const c = ch.charCodeAt(0);
-    if (c >= 0xac00 && c <= 0xd7a3) out += CHO[Math.floor((c - 0xac00) / 588)];
-  }
-  return out;
-}
-function norm(s) {
-  return (s || "").toLowerCase().replace(/['’\-\s·()]/g, "");
-}
-
-// _aka = 옛 한국어 표기. 2026-07-17에 이름 정본을 diablo-mdb로 맞추며 409종이 바뀌었다
-// (음차 "더 내셔" → 번역 "갉아먹는 자"). 표시는 새 이름이지만 사용자는 옛 이름으로 검색하므로
-// 도달 경로를 남긴다. 초성도 양쪽 다.
+// 검색 인덱스 — 무엇을 왜 넣는지:
+//   en    : 내부 식별자(`Cutthroat1`) + 표시명(`Bartuc's Cut-Throat`) + 베이스 영문. 셋 다로 찾힌다.
+//   aka   : 옛 한글 표기 + 베이스 한글. **표시하지는 않지만 사용자가 그걸로 찾는** 값이다.
+//           - 옛 표기: 2026-07-17 이름 정본화로 409종이 바뀌었다(음차 "더 내셔" → 번역 "갉아먹는 자")
+//           - 베이스 한글: "샤코"(최다 검색어)로 찾으면 할리퀸 관모가 나와야 하는데 안 나왔다(base 가 영문이었다)
 const AUG = COLLECT.map((x) => ({
   ...x,
-  _kr: norm(x.kr),
-  // 내부 이름·표시명·베이스(영문) 전부 색인. 베이스 영문은 우리 값이 지저분하지만(`AncientArmor` 등)
-  // 검색은 부분일치라 있는 편이 낫다 — 한글 베이스만 되고 영문은 안 되면 어중간하다.
-  _en: norm(x.en) + " " + norm(x.enDisp || "") + " " + norm(x.base || ""),
-  // _aka = 옛 한글 + 베이스 한글. 둘 다 "표시하지는 않지만 사용자가 그걸로 찾는" 값이다.
-  // 베이스: "샤코"(최다 검색어)로 찾으면 할리퀸 관모가 나와야 하는데 안 나왔다 — base 필드가 영문이었다.
-  _aka: norm(x.aka || "") + " " + norm(x.baseKr || ""),
-  _cho: chosung(x.kr) + (x.aka ? " " + chosung(x.aka) : ""),
+  ...indexOf(x, {
+    kr: x.kr,
+    en: [x.en, x.enDisp, x.base],
+    aka: [x.aka, x.baseKr],
+  }),
 }));
 
 const CATS = [
@@ -127,15 +114,11 @@ export default function GrailPage() {
 
   const hits = useMemo(() => {
     const raw = query.trim();
-    const nq = norm(raw);
-    const isCho = /^[ㄱ-ㅎ]+$/.test(raw.replace(/\s/g, ""));
     return AUG.filter((x) => {
       if (!inScope(x.scope, scope)) return false;
       if (todoOnly && collected.has(x.id)) return false;
       if (activeCat !== "all" && x.cat !== activeCat) return false;
-      if (!nq && !isCho) return true;
-      if (isCho) return x._cho.includes(raw.replace(/\s/g, ""));
-      return x._kr.includes(nq) || x._en.includes(nq) || x._aka.includes(nq);
+      return matches(x, raw);
     });
   }, [query, activeCat, todoOnly, collected, scope]);
 

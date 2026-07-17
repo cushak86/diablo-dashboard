@@ -3,6 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { ITEMS } from "../../lib/items";
 import { schedulePush } from "../../lib/sync";
+import { indexOf, matches } from "../../lib/item-search";
 
 const TRADERIE_BASE = "https://traderie.com/diablo2resurrected";
 
@@ -12,25 +13,12 @@ const CATS = [
 ];
 const CAT_LABEL = { rw: "룬워드", unique: "고유", jewel: "주얼", set: "세트", statue: "조각상", charm: "부적", base: "베이스", misc: "소모품" };
 
-const CHO = ["ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
-function chosung(s) {
-  let out = "";
-  for (const ch of s) {
-    const c = ch.charCodeAt(0);
-    if (c >= 0xac00 && c <= 0xd7a3) out += CHO[Math.floor((c - 0xac00) / 588)];
-  }
-  return out;
-}
-function norm(s) {
-  return (s || "").toLowerCase().replace(/['’\-\s·()]/g, "");
-}
 
+// 이 파일은 별칭 필드명이 `alias` 다(/grail·/runewords 는 `aka`). 공용 모듈이 필드명을 강제하지 않아
+// 각자 자기 이름으로 넘긴다 — 데이터 파일을 건드리지 않으려는 것이다(en 은 사용자 즐겨찾기 키다).
 const AUG_ITEMS = ITEMS.map((it) => ({
   ...it,
-  _kr: norm(it.kr),
-  _en: norm(it.en),
-  _alias: norm(it.alias || ""),
-  _cho: chosung(it.kr.replace(/\s/g, "")),
+  ...indexOf(it, { kr: it.kr, en: it.en, aka: it.alias }),
 }));
 
 export default function NewItemsPage() {
@@ -61,14 +49,10 @@ export default function NewItemsPage() {
 
   const hits = useMemo(() => {
     const raw = query.trim();
-    const nq = norm(raw);
-    const isCho = /^[ㄱ-ㅎ]+$/.test(raw.replace(/\s/g, ""));
     return AUG_ITEMS.filter((it) => {
       if (favOnly && !favs.has(it.en)) return false;
       if (activeCat !== "all" && it.cat !== activeCat) return false;
-      if (!nq && !isCho) return true;
-      if (isCho) return it._cho.includes(raw.replace(/\s/g, ""));
-      return it._kr.includes(nq) || it._en.includes(nq) || it._alias.includes(nq);
+      return matches(it, raw);
     });
   }, [query, activeCat, favOnly, favs]);
 

@@ -4,33 +4,19 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import { runewordCubeCost } from "../../lib/cube";
 import { RW } from "../../lib/runewords";
 import { schedulePush } from "../../lib/sync";
+import { indexOf, matches } from "../../lib/item-search";
 
 const CATS = [
   ["all", "전체"], ["new", "신규 3.x"], ["weapon", "무기"], ["armor", "갑옷"], ["helm", "투구"], ["shield", "방패"],
 ];
 
-const CHO = ["ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
-function chosung(s) {
-  let out = "";
-  for (const ch of s) {
-    const c = ch.charCodeAt(0);
-    if (c >= 0xac00 && c <= 0xd7a3) out += CHO[Math.floor((c - 0xac00) / 588)];
-  }
-  return out;
-}
-function norm(s) {
-  return (s || "").toLowerCase().replace(/['’\-\s·]/g, "");
-}
 
 // _aka = 옛 한국어 표기. 2026-07-17에 이름 정본을 diablo-mdb로 맞추며 37개가 바뀌었다(정신→영혼 등).
 // 표시는 새 이름이지만 사용자는 옛 이름으로 검색하므로 도달 경로를 남긴다. 초성도 양쪽 다.
+// extra = 룬 조합("TalThulOrtAmn") — 이 탭 고유 축이다. "talthul" 로도 찾힌다.
 const AUG = RW.map((r) => ({
   ...r,
-  _kr: norm(r.kr),
-  _en: norm(r.en),
-  _aka: norm(r.aka || ""),
-  _runes: norm(r.runes.join("")),
-  _cho: chosung(r.kr.replace(/\s/g, "")) + (r.aka ? " " + chosung(r.aka.replace(/\s/g, "")) : ""),
+  ...indexOf(r, { kr: r.kr, en: r.en, aka: r.aka, extra: r.runes.join("") }),
 }));
 
 export default function RunewordsPage() {
@@ -97,15 +83,11 @@ export default function RunewordsPage() {
 
   const hits = useMemo(() => {
     const raw = query.trim();
-    const nq = norm(raw);
-    const isCho = /^[ㄱ-ㅎ]+$/.test(raw.replace(/\s/g, ""));
     const arr = AUG.filter((r) => {
       if (favOnly && !favs.has(r.en)) return false;
       if (activeCat === "new" && !r.isNew) return false;
       if (activeCat !== "all" && activeCat !== "new" && !r.cats.includes(activeCat)) return false;
-      if (!nq && !isCho) return true;
-      if (isCho) return r._cho.includes(raw.replace(/\s/g, ""));
-      return r._kr.includes(nq) || r._en.includes(nq) || r._aka.includes(nq) || r._runes.includes(nq);
+      return matches(r, raw);
     });
     if (sort === "level") arr.sort((a, b) => a.clvl - b.clvl);
     else if (sort === "sockets") arr.sort((a, b) => a.sockets - b.sockets);

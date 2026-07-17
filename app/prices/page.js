@@ -3,23 +3,14 @@
 import { useMemo, useState, useEffect, useRef } from "react";
 import { CATALOG, RUNE_UNITS } from "../../lib/price-catalog";
 import { getBaseline, BASELINE, AS_OF, STALE_MONTHS, monthsSinceAsOf } from "../../lib/price-baseline";
+import { indexOf, matches } from "../../lib/item-search";
 
 const TIER_RANK = { S: 0, A: 1, B: 2, C: 3, D: 4, HR: 5 };
 
-const CHO = ["ㄱ", "ㄲ", "ㄴ", "ㄷ", "ㄸ", "ㄹ", "ㅁ", "ㅂ", "ㅃ", "ㅅ", "ㅆ", "ㅇ", "ㅈ", "ㅉ", "ㅊ", "ㅋ", "ㅌ", "ㅍ", "ㅎ"];
-function chosung(s) {
-  let out = "";
-  for (const ch of s) {
-    const c = ch.charCodeAt(0);
-    if (c >= 0xac00 && c <= 0xd7a3) out += CHO[Math.floor((c - 0xac00) / 588)];
-  }
-  return out;
-}
-function norm(s) {
-  return (s || "").toLowerCase().replace(/['’\-\s·()]/g, "");
-}
 
-const AUG = CATALOG.map((c) => ({ ...c, _kr: norm(c.kr), _en: norm(c.en), _cho: chosung(c.kr) }));
+const AUG = CATALOG.map((c) => ({ ...c, ...indexOf(c, { kr: c.kr, en: c.en }) }));
+// 기준선 표도 같은 인덱스를 쓴다 — 예전엔 검색할 때마다 norm/chosung 을 다시 계산했다.
+const AUG_BASE = BASELINE.map((b) => ({ ...b, ...indexOf(b, { kr: b.kr, en: b.en }) }));
 
 function fmtAgo(t) {
   const s = Math.max(0, Math.floor((Date.now() - t) / 1000));
@@ -55,12 +46,8 @@ export default function PricesPage() {
 
   const hits = useMemo(() => {
     const raw = query.trim();
-    const nq = norm(raw);
-    const isCho = /^[ㄱ-ㅎ]+$/.test(raw.replace(/\s/g, ""));
-    if (!nq && !isCho) return AUG.slice(0, 40);
-    return AUG.filter((x) =>
-      isCho ? x._cho.includes(raw.replace(/\s/g, "")) : x._kr.includes(nq) || x._en.includes(nq)
-    ).slice(0, 60);
+    if (!raw) return AUG.slice(0, 40);
+    return AUG.filter((x) => matches(x, raw)).slice(0, 60);
   }, [query]);
 
   const baseline = useMemo(() => (selected ? getBaseline(selected.key) : null), [selected]);
@@ -68,14 +55,7 @@ export default function PricesPage() {
   // 기준선 시세표(항상 표시) — 검색어로 필터, 티어순 정렬. 선택 불필요하게 지표를 노출.
   const baseHits = useMemo(() => {
     const raw = query.trim();
-    const nq = norm(raw);
-    const isCho = /^[ㄱ-ㅎ]+$/.test(raw.replace(/\s/g, ""));
-    const arr = BASELINE.filter((b) => {
-      if (!nq && !isCho) return true;
-      return isCho
-        ? chosung(b.kr).includes(raw.replace(/\s/g, ""))
-        : norm(b.kr).includes(nq) || norm(b.en).includes(nq);
-    });
+    const arr = AUG_BASE.filter((b) => matches(b, raw));
     return [...arr].sort((a, b) => (TIER_RANK[a.tier] ?? 9) - (TIER_RANK[b.tier] ?? 9));
   }, [query]);
 
