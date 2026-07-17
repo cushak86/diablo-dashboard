@@ -8,14 +8,14 @@ export default function sitemap() {
   return [
     { url: `${BASE}/terror-zone`, lastModified: "2026-07-12", changeFrequency: "hourly", priority: 1 },
     { url: `${BASE}/new-items`, lastModified: "2026-07-14", changeFrequency: "weekly", priority: 0.7 },
-    { url: `${BASE}/prices`, lastModified: "2026-07-13", changeFrequency: "weekly", priority: 0.6 },
-    { url: `${BASE}/runewords`, lastModified: "2026-07-14", changeFrequency: "monthly", priority: 0.4 },
-    { url: `${BASE}/build`, lastModified: "2026-07-16", changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/prices`, lastModified: "2026-07-17", changeFrequency: "weekly", priority: 0.6 },
+    { url: `${BASE}/runewords`, lastModified: "2026-07-17", changeFrequency: "monthly", priority: 0.4 },
+    { url: `${BASE}/build`, lastModified: "2026-07-17", changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/breakpoints`, lastModified: "2026-07-12", changeFrequency: "monthly", priority: 0.4 },
     { url: `${BASE}/cube`, lastModified: "2026-07-12", changeFrequency: "monthly", priority: 0.4 },
-    { url: `${BASE}/grail`, lastModified: "2026-07-14", changeFrequency: "monthly", priority: 0.5 },
+    { url: `${BASE}/grail`, lastModified: "2026-07-17", changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE}/farming`, lastModified: "2026-07-14", changeFrequency: "monthly", priority: 0.4 },
-    { url: `${BASE}/drops`, lastModified: "2026-07-16", changeFrequency: "monthly", priority: 0.6 },
+    { url: `${BASE}/drops`, lastModified: "2026-07-17", changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/planner`, lastModified: "2026-07-14", changeFrequency: "monthly", priority: 0.5 },
   ];
   // 제외: /backup(개인 데이터 도구, layout.js에서 noindex) · /admin·/docs(비공개)
