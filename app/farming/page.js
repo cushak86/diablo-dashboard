@@ -148,7 +148,7 @@ export default function FarmingPage() {
         {section("주간", "weekly", WEEKLY, weeklyDone, resetIn.week ? `초기화까지 약 ${resetIn.week}` : "매주 월요일(KST) 초기화")}
 
         <div className="note">
-          <b>참고</b> — 공포 지역(TZ)은 1시간 주기로 변하므로 별도 <a href="/terror-zone">공역</a> 탭에서
+          <b>참고</b> — 공포의 영역(TZ)은 1시간 주기로 변하므로 별도 <a href="/terror-zone">공포의 영역</a> 탭에서
           현재 지역을 확인하세요. 항목은 커뮤니티에서 통용되는 대표 파밍처 예시이며(<b>비공식 · 검증 필요</b>),
           개인 루틴에 맞게 취사선택하면 됩니다.
         </div>
