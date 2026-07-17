@@ -24,8 +24,12 @@ function norm(s) {
 const AUG = COLLECT.map((x) => ({
   ...x,
   _kr: norm(x.kr),
-  _en: norm(x.en) + " " + norm(x.enDisp || ""), // 내부 이름·표시명 둘 다 색인(둘 다로 검색된다)
-  _aka: norm(x.aka || ""),
+  // 내부 이름·표시명·베이스(영문) 전부 색인. 베이스 영문은 우리 값이 지저분하지만(`AncientArmor` 등)
+  // 검색은 부분일치라 있는 편이 낫다 — 한글 베이스만 되고 영문은 안 되면 어중간하다.
+  _en: norm(x.en) + " " + norm(x.enDisp || "") + " " + norm(x.base || ""),
+  // _aka = 옛 한글 + 베이스 한글. 둘 다 "표시하지는 않지만 사용자가 그걸로 찾는" 값이다.
+  // 베이스: "샤코"(최다 검색어)로 찾으면 할리퀸 관모가 나와야 하는데 안 나왔다 — base 필드가 영문이었다.
+  _aka: norm(x.aka || "") + " " + norm(x.baseKr || ""),
   _cho: chosung(x.kr) + (x.aka ? " " + chosung(x.aka) : ""),
 }));
 

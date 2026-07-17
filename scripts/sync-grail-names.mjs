@@ -35,21 +35,29 @@ if (!root || !fs.existsSync(path.join(root, "data/uniques.json"))) {
 const U = JSON.parse(fs.readFileSync(path.join(root, "data/uniques.json"), "utf8"));
 const S = JSON.parse(fs.readFileSync(path.join(root, "data/sets.json"), "utf8"));
 
-// source_key(= 우리 en) → { ko, en }
+// source_key(= 우리 en) → { ko, en, baseKo }
+//
+// baseKo 를 **우리 `base` 문자열로 조회하지 않는다.** 우리 base 는 지저분하다 —
+// `Kris`(mdb `Kriss`) · `Hard Leather`(mdb `Hard Leather Armor`) · `AncientArmor`(띄어쓰기 없음) ·
+// `Gloves`(후보 2개로 모호) · `Hunter\92s Bow`(Windows-1252 아포스트로피 잔재) · 값 자체가 틀린 것도 있다
+// (`Cutthroat1` 의 base 가 우리는 `Runic Talons`, mdb 는 `Greater Talons`).
+// 문자열 대조는 262/385 에서 막히고 나머지는 추측이 된다.
+// → **유니크를 source_key 로 조인해 그 항목이 들고 있는 `base.ko` 를 쓴다. 512/512 확보된다.**
 const bySK = new Map();
-for (const u of U.uniques) bySK.set(`unique|${u.source_key}`, { ko: u.name_ko, en: u.name_en });
-for (const s of S.sets || []) for (const it of s.items || []) bySK.set(`set|${it.source_key}`, { ko: it.name_ko, en: it.name_en });
+const pick = (x) => ({ ko: x.name_ko, en: x.name_en, baseKo: x.base?.ko || "" });
+for (const u of U.uniques) bySK.set(`unique|${u.source_key}`, pick(u));
+for (const s of S.sets || []) for (const it of s.items || []) bySK.set(`set|${it.source_key}`, pick(it));
 
 const target = path.join(process.cwd(), "lib/grail-classic.js");
 let code = fs.readFileSync(target, "utf8");
 
-const krChanged = [], enAdded = [];
+const krChanged = [], enAdded = [], baseAdded = [];
 let miss = 0;
-// `kr: "…", [aka: "…",] [enDisp: "…",] en: "<source_key>", cat: "…"`
+// `kr: "…", [aka: "…",] [enDisp: "…",] en: "<source_key>", cat: "…", [baseKr: "…",]`
 // en·cat 은 캡처해 조회에만 쓰고 **그대로 되돌려 쓴다** — 구조적으로 못 바꾼다.
 code = code.replace(
-  /(kr:\s*")([^"]+)(",)(\s*aka:\s*"[^"]*",)?(\s*enDisp:\s*"[^"]*",)?(\s*en:\s*"([^"]+)",\s*cat:\s*"([^"]+)")/g,
-  (m, pre, oldKr, post, oldAka, _oldDisp, tail, en, cat) => {
+  /(kr:\s*")([^"]+)(",)(\s*aka:\s*"[^"]*",)?(\s*enDisp:\s*"[^"]*",)?(\s*en:\s*"([^"]+)",\s*cat:\s*"([^"]+)")(,\s*baseKr:\s*"[^"]*")?/g,
+  (m, pre, oldKr, post, oldAka, _oldDisp, tail, en, cat, _oldBaseKr) => {
     const hit = bySK.get(`${cat}|${en}`);
     if (!hit) { miss++; return m; }
 
@@ -63,13 +71,17 @@ code = code.replace(
     let disp = "";
     if (hit.en !== en) { disp = ` enDisp: "${hit.en}",`; enAdded.push({ en, to: hit.en }); }
 
-    return pre + kr + post + aka + disp + tail;
+    // 베이스 한글: 검색용. "샤코"로 찾으면 할리퀸 관모가 나와야 한다(최다 검색어인데 안 잡혔다).
+    let bk = "";
+    if (hit.baseKo) { bk = `, baseKr: "${hit.baseKo}"`; baseAdded.push(en); }
+
+    return pre + kr + post + aka + disp + tail + bk;
   }
 );
 
 fs.writeFileSync(target, code);
 console.log(`mdb: uniques=${U._generated} sets=${S._generated}`);
-console.log(`\nkr 변경 ${krChanged.length}건 · enDisp 부여 ${enAdded.length}건 · source_key 미매칭 ${miss}건\n`);
+console.log(`\nkr 변경 ${krChanged.length}건 · enDisp ${enAdded.length}건 · baseKr ${baseAdded.length}건 · source_key 미매칭 ${miss}건\n`);
 for (const c of krChanged.slice(0, 10)) console.log(`  kr   ${c.en.padEnd(22)} "${c.from}" → "${c.to}"`);
 if (krChanged.length > 10) console.log(`  … 외 ${krChanged.length - 10}건`);
 console.log("");
