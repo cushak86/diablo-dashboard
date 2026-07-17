@@ -63,7 +63,7 @@ function warnLines(rows) {
   }
   if (weak.length) {
     const areas = [...new Set(weak.map((r) => r.areaKr))].join("·");
-    out.push(`${areas} 표기는 게임 데이터의 직접 근거가 아니라 이 사이트의 기존 파밍·공역 정보를 따랐습니다.`);
+    out.push(`${areas} 표기는 게임 데이터의 직접 근거가 아니라 이 사이트의 기존 파밍·공포의 영역 정보를 따랐습니다.`);
   }
   return out;
 }
