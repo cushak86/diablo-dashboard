@@ -18,7 +18,16 @@ function norm(s) {
   return (s || "").toLowerCase().replace(/['’\-\s·()]/g, "");
 }
 
-const AUG = COLLECT.map((x) => ({ ...x, _kr: norm(x.kr), _en: norm(x.en), _cho: chosung(x.kr) }));
+// _aka = 옛 한국어 표기. 2026-07-17에 이름 정본을 diablo-mdb로 맞추며 409종이 바뀌었다
+// (음차 "더 내셔" → 번역 "갉아먹는 자"). 표시는 새 이름이지만 사용자는 옛 이름으로 검색하므로
+// 도달 경로를 남긴다. 초성도 양쪽 다.
+const AUG = COLLECT.map((x) => ({
+  ...x,
+  _kr: norm(x.kr),
+  _en: norm(x.en),
+  _aka: norm(x.aka || ""),
+  _cho: chosung(x.kr) + (x.aka ? " " + chosung(x.aka) : ""),
+}));
 
 const CATS = [
   ["all", "전체"], ["unique", "고유"], ["set", "세트"], ["jewel", "고유 주얼"],
@@ -120,7 +129,7 @@ export default function GrailPage() {
       if (activeCat !== "all" && x.cat !== activeCat) return false;
       if (!nq && !isCho) return true;
       if (isCho) return x._cho.includes(raw.replace(/\s/g, ""));
-      return x._kr.includes(nq) || x._en.includes(nq);
+      return x._kr.includes(nq) || x._en.includes(nq) || x._aka.includes(nq);
     });
   }, [query, activeCat, todoOnly, collected, scope]);
 
