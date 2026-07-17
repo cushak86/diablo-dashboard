@@ -88,7 +88,7 @@ export default function NewItemsPage() {
     <main>
       <div className="wrap stack">
         <div className="card">
-          <div className="eyebrow gold">신규 아이템 (트레더리)</div>
+          <div className="eyebrow gold">신규 아이템</div>
           <h1 className="zname">악마술사의 군림 신규 아이템 · 트레더리 검색기</h1>
           <p className="zen">
             트레더리(Traderie)에서 한글 검색이 안 되는 확장팩·래더 13/14 신규 아이템의 한글명 → 영문명 변환 + 거래

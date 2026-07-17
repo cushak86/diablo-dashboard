@@ -20,8 +20,8 @@ const LINKS = [
   ["cube", "/cube", "호라드릭 큐브"],
   ["breakpoints", "/breakpoints", "프레임 기준"],
   ["prices", "/prices", "시세 지수"],
-  ["terrorZone", "/terror-zone", "공역"],
-  ["grail", "/grail", "홀리 그레일"],
+  ["terrorZone", "/terror-zone", "공포의 영역"],
+  ["grail", "/grail", "아이템 (연대기)"],
 ];
 
 // 스팟이 하나도 없는 목표의 사유. lib/farm-targets.js의 warn 원문은 개발 메모(반말 + `1345개 TC`·`armo3`
@@ -266,7 +266,7 @@ export default function DropsPage() {
                 <span className="dot">●</span>
                 <span>
                   <b>공포의 영역(TZ, Terror Zone)</b> — 매시 정각마다 바뀌는 강화 사냥터. 드롭 표가
-                  상향됩니다. (→ 공역 탭)
+                  상향됩니다. (→ 공포의 영역 탭)
                 </span>
               </li>
             </ul>

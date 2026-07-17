@@ -149,7 +149,7 @@ export default function GrailPage() {
     <main>
       <div className="wrap stack">
         <div className="card">
-          <div className="eyebrow gold">홀리 그레일</div>
+          <div className="eyebrow gold">아이템 (연대기)</div>
           <h1 className="zname">악마술사의 군림 수집 트래커</h1>
           <p className="zen">
             신규 고유·세트·주얼·파괴 부적과 33룬, 룬워드에 더해 <b>클래식 고유 385 · 세트 부위 127</b>까지 체크할 수
