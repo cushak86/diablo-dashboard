@@ -24,7 +24,7 @@ function norm(s) {
 const AUG = COLLECT.map((x) => ({
   ...x,
   _kr: norm(x.kr),
-  _en: norm(x.en),
+  _en: norm(x.en) + " " + norm(x.enDisp || ""), // 내부 이름·표시명 둘 다 색인(둘 다로 검색된다)
   _aka: norm(x.aka || ""),
   _cho: chosung(x.kr) + (x.aka ? " " + chosung(x.aka) : ""),
 }));
@@ -242,7 +242,9 @@ export default function GrailPage() {
                       <span className="chk-box">✓</span>
                       <span className="chk-main">
                         <span className="chk-kr">{x.kr}</span>
-                        {x.en !== x.kr && <span className="chk-sub">{x.en}</span>}
+                        {/* enDisp = D2R 공식 표시명. x.en 은 게임 내부 식별자(`Cutthroat1` 같은 것)라
+                            그대로 뿌리면 사용자에게 내부 이름이 노출된다. 표시명이 없으면 둘이 같다는 뜻. */}
+                        {(x.enDisp || x.en) !== x.kr && <span className="chk-sub">{x.enDisp || x.en}</span>}
                       </span>
                     </button>
                   );
