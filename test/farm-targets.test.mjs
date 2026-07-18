@@ -73,15 +73,15 @@ t("groupLadder — 같은 group을 level 오름차순으로(Desecrated 변형 = 
 });
 
 // ── ② 데이터 정합 (lib/farm-targets.js) ──────────────────────────────────
-t("목표 33개 (1차 10 + 2차 15 + D1 장신구 8)", () => {
-  assert.equal(FARM_TARGETS.length, 33);
+t("목표 37개 (1차 10 + 2차 15 + D1 장신구 8 + D1 방어구 4[샤코는 기존 정정])", () => {
+  assert.equal(FARM_TARGETS.length, 37);
 });
 
-t("타입 분포 — 룬 11 · 룬워드 재료 8 · 고유 14 (C6 + D1 장신구 8)", () => {
+t("타입 분포 — 룬 11 · 룬워드 재료 8 · 고유 18", () => {
   const by = (ty) => FARM_TARGETS.filter((x) => x.type === ty).length;
   assert.equal(by("rune"), 11);
   assert.equal(by("runeword-mat"), 8);
-  assert.equal(by("unique"), 14);
+  assert.equal(by("unique"), 18);
 });
 
 t("uberOnly(안니·토치) — 스팟 0·tcPath 없음·warn 있음·qlvl 110 (일반 드롭 불가 확정)", () => {
@@ -162,8 +162,9 @@ t("근거 없는 스팟은 없다 — 스팟이 비면 반드시 warn이 있다(
   assert.deepEqual(bad, []);
 });
 
-t("스팟이 있으면 근거 경로(tcPath)가 있다", () => {
-  const bad = FARM_TARGETS.filter((x) => (x.spots.plain.length || x.spots.tz.length) && !x.tcPath).map((x) => x.id);
+t("스팟이 있으면 근거가 있다 — tcPath(직접 잎) 또는 baseLevel(방어구 armo 밴드)", () => {
+  // 방어구 유니크는 armo 밴드로 나와 직접 잎 경로가 없다 → 근거는 baseLevel(+SPOTS.armoMax 규칙). 그 외는 tcPath.
+  const bad = FARM_TARGETS.filter((x) => (x.spots.plain.length || x.spots.tz.length) && !x.tcPath && !x.baseLevel).map((x) => x.id);
   assert.deepEqual(bad, []);
 });
 
@@ -171,12 +172,36 @@ t("모든 목표에 evidence(왜 인기인가)가 있다", () => {
   assert.deepEqual(FARM_TARGETS.filter((x) => !x.evidence).map((x) => x.id), []);
 });
 
-t("파일럿 판정 스냅샷 — SoJ는 스팟 7곳, 샤코는 0곳 + ⚠️ (2차 확장 판단 근거)", () => {
+t("SoJ 7곳 · 샤코는 armoNN 크랙으로 7곳 해결(2026-07-18 — round-1 '0곳' 정정)", () => {
   const soj = FARM_TARGETS.find((x) => x.id === "unique-soj");
   const shako = FARM_TARGETS.find((x) => x.id === "unique-shako");
   assert.equal(soj.spots.plain.length, 7);
-  assert.equal(shako.spots.plain.length + shako.spots.tz.length, 0);
-  assert.ok(shako.warn?.includes("uap"), "샤코 warn에 미해결 사유(uap)가 남아 있어야 한다");
+  assert.equal(shako.spots.plain.length, 7, "샤코는 이제 데이터로 스팟 확정(warn/빈칸 아님)");
+  assert.equal(shako.warn, null, "해결됐으므로 미해결 warn 없음");
+  assert.equal(shako.baseLevel, 58, "방어구 유니크는 baseLevel(armor.json)로 판정");
+});
+
+t("방어구 유니크 규칙 — plain 스팟은 armoMax≥baseLevel AND mlvl≥qlvl (근거 있는 것만)", () => {
+  // 방어구 유니크 = baseLevel 보유(직접 잎 아님). 표시한 plain이 두 게이트를 모두 만족하는지.
+  const bad = [];
+  for (const x of FARM_TARGETS.filter((x) => x.type === "unique" && x.baseLevel)) {
+    for (const id of x.spots.plain) {
+      const s = SPOTS[id];
+      if (!(s.armoMax >= x.baseLevel)) bad.push(`${x.id}: ${id} armoMax ${s.armoMax} < baseLevel ${x.baseLevel}`);
+      if (!(s.mlvl >= x.qlvl)) bad.push(`${x.id}: ${id} mlvl ${s.mlvl} < qlvl ${x.qlvl}`);
+    }
+  }
+  assert.deepEqual(bad, []);
+});
+
+t("방어구 유니크 완결성 — 두 게이트를 만족하는 스팟은 빠짐없이 실렸다(임의 누락 금지)", () => {
+  const bad = [];
+  for (const x of FARM_TARGETS.filter((x) => x.type === "unique" && x.baseLevel)) {
+    const expect = Object.entries(SPOTS).filter(([, s]) => s.armoMax >= x.baseLevel && s.mlvl >= x.qlvl).map(([id]) => id).sort();
+    const got = [...x.spots.plain].sort();
+    if (JSON.stringify(got) !== JSON.stringify(expect)) bad.push(`${x.id}: ${JSON.stringify(got)} ≠ 규칙 ${JSON.stringify(expect)}`);
+  }
+  assert.deepEqual(bad, []);
 });
 
 // ── ③ 링크 축 실존 (기획 §4-3 — 404 = 0) ─────────────────────────────────
@@ -334,6 +359,7 @@ if (fs.existsSync(DUMP)) {
     const bad = [];
     for (const t2 of FARM_TARGETS) {
       if (!t2.itemCode) continue; // 룬워드 재료·저급묶음은 tcPath 검증으로 충분
+      if (t2.baseLevel) continue; // 방어구 유니크는 직접 잎이 아님(armo 밴드) — armoMax 규칙 테스트가 별도 검증
       const gate = t2.qlvl || 0; // 유니크는 qlvl로 plain/tz가 갈린다(룬은 gate=0 → 베이스 도달성으로)
       for (const id of t2.spots.plain) {
         const s = SPOTS[id];
@@ -358,9 +384,37 @@ if (fs.existsSync(DUMP)) {
     assert.deepEqual(bad, []);
   });
 
-  t("샤코 베이스 uap는 1345개 TC 어디에도 없다(파일럿 실패 근거의 재확인)", () => {
+  t("방어구 코드 uap는 직접 잎이 아니다 — 그래서 armo 밴드 규칙을 쓴다(직접 도달성으로 판정하면 안 됨)", () => {
     assert.deepEqual(directParents("uap", tc), []);
     assert.equal(expandLeaves("Countess (H)", tc).has("uap"), false);
+    // 대신 armo 밴드로 도달: Countess armoMax(66) ≥ Shako baseLevel(58) → 도달. 이것이 크랙의 핵심.
+    assert.equal(SPOTS.countess.armoMax >= 58, true);
+  });
+
+  t("SPOTS.armoMax·weapMax가 원본 TC 전개의 최고 armo/weap 밴드와 일치한다(크랙 근거 — 매직넘버 아님)", () => {
+    const bandMax = (leaves, pre) => Math.max(0, ...[...leaves].filter((c) => new RegExp(`^${pre}\\d+$`).test(c)).map((c) => +c.slice(pre.length)));
+    const bad = [];
+    for (const [id, s] of Object.entries(SPOTS)) {
+      const lv = expandLeaves(s.tc, tc);
+      const aM = bandMax(lv, "armo"), wM = bandMax(lv, "weap");
+      if (s.armoMax !== aM) bad.push(`${id}: armoMax ${s.armoMax} ≠ 실제 ${aM}`);
+      if (s.weapMax !== wM) bad.push(`${id}: weapMax ${s.weapMax} ≠ 실제 ${wM}`);
+    }
+    assert.deepEqual(bad, []);
+  });
+
+  t("방어구 유니크 baseLevel이 armor.json[code].level과 일치한다(날조 방지)", () => {
+    const AR = path.join(process.cwd(), ".d2data", "armor.json");
+    if (!fs.existsSync(AR)) { console.log("       (armor.json 없음 — 건너뜀)"); return; }
+    const raw = JSON.parse(fs.readFileSync(AR, "utf8"));
+    const arr = Array.isArray(raw) ? raw : Object.values(raw);
+    const lvlOf = {};
+    for (const a of arr) lvlOf[a.code] = a.level;
+    const bad = [];
+    for (const x of FARM_TARGETS.filter((x) => x.baseLevel)) {
+      if (lvlOf[x.itemCode] !== x.baseLevel) bad.push(`${x.id}: baseLevel ${x.baseLevel} ≠ armor.json(${x.itemCode}) ${lvlOf[x.itemCode]}`);
+    }
+    assert.deepEqual(bad, []);
   });
 
   t("SPOTS.mlvl이 monstats Level(H)와 일치한다(유니크 qlvl 판정의 근거 — 매직넘버 아님)", () => {
