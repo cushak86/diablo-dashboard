@@ -34,6 +34,8 @@ const TIER_RANK = { S: 0, "S*": 1, A: 2, B: 3, C: 4, D: 5, F: 6, "—": 9 };
 // 추천 장비 슬롯 표기 순서. builds.js의 gear 키와 일치. 없는 슬롯은 건너뛴다.
 const SLOT_ORDER = ["투구", "갑옷", "무기", "방패", "장갑", "벨트", "신발", "반지", "목걸이", "부적"];
 const SLOT_LBL = { fontSize: 11, fontWeight: 800, color: "var(--gold)", minWidth: 32, flexShrink: 0 };
+// 용병(2막) 장비 슬롯 표기 순서. builds.js의 mercGear 키와 일치.
+const MERC_SLOT_ORDER = ["무기", "갑옷", "투구"];
 
 export default function BuildPage() {
   const [cls, setCls] = useState("all");
@@ -197,6 +199,24 @@ export default function BuildPage() {
 
               <div style={HD}>용병</div>
               <div style={DIM}>{b.mercenary}</div>
+              {b.mercGear && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 4, marginTop: 6 }}>
+                  {MERC_SLOT_ORDER.filter((s) => b.mercGear[s]?.length).map((slot) => (
+                    <div key={slot} style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
+                      <span style={SLOT_LBL}>{slot}</span>
+                      <span style={DIM}>
+                        {b.mercGear[slot].map((g, i) => (
+                          <span key={g.name}>
+                            {i > 0 && <span style={{ color: "#555" }}> · </span>}
+                            <b style={{ color: "var(--parch)" }}>{g.name}</b>
+                            {g.note && <span style={{ color: "#8a8a8a" }}> ({g.note})</span>}
+                          </span>
+                        ))}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {b.note && <div className="rw-stat">{b.note}</div>}
 
