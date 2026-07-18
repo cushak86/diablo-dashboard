@@ -36,6 +36,8 @@ const SLOT_ORDER = ["투구", "갑옷", "무기", "방패", "장갑", "벨트", 
 const SLOT_LBL = { fontSize: 11, fontWeight: 800, color: "var(--gold)", minWidth: 32, flexShrink: 0 };
 // 용병(2막) 장비 슬롯 표기 순서. builds.js의 mercGear 키와 일치.
 const MERC_SLOT_ORDER = ["무기", "갑옷", "투구"];
+// 경고 배지(래더 사용 불가 등) — 적색.
+const WARN = { marginLeft: 8, fontSize: 10, fontWeight: 800, color: "#c1554a", border: "1px solid #c1554a", borderRadius: 4, padding: "0 6px", whiteSpace: "nowrap", verticalAlign: "middle" };
 
 export default function BuildPage() {
   const [cls, setCls] = useState("all");
@@ -88,7 +90,8 @@ export default function BuildPage() {
             })}
           </div>
           <p style={{ ...DIM, marginTop: 10 }}>
-            무술(모자이크)은 <b>S*</b> — 모자이크 변형 기준입니다(순수 불사조는 D). <b>—</b>는 해당 축 미등재(낮음이 아니라 데이터 없음).
+            무술(모자이크)은 <b>S*</b> — 모자이크 변형 기준입니다(순수 불사조는 D). 단 <b style={{ color: "#c1554a" }}>모자이크는 현 래더에서 삭제/너프돼 사용 불가</b>라,
+            이 S*는 <b>비래더</b> 기준입니다. <b>—</b>는 해당 축 미등재(낮음이 아니라 데이터 없음).
           </p>
         </div>
 
@@ -121,6 +124,8 @@ export default function BuildPage() {
                 <div className="rw-name">
                   {b.name}
                   {b.verify && <span className="rw-newtag">{b.verify}</span>}
+                  {/* 경고 배지(예: 래더 사용 불가) — 적색으로 눈에 띄게. */}
+                  {b.warn && <span style={WARN}>{b.warn}</span>}
                   {/* 종합 티어를 이름 옆에 크게 — 등급색은 S~D 로 갈린다. */}
                   {b.tier && <span style={tierStyle(b.tier.overall)}>{b.tier.overall}</span>}
                 </div>
