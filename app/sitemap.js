@@ -6,6 +6,7 @@ const BASE = "https://diablo-dashboard-phi.vercel.app";
 // **페이지 내용을 고치면 그 줄의 날짜도 함께 갱신할 것.** (초기값: 2026-07-16 git 이력 실측)
 export default function sitemap() {
   return [
+    { url: `${BASE}/`, lastModified: "2026-07-18", changeFrequency: "weekly", priority: 1 },
     { url: `${BASE}/terror-zone`, lastModified: "2026-07-12", changeFrequency: "hourly", priority: 1 },
     { url: `${BASE}/new-items`, lastModified: "2026-07-14", changeFrequency: "weekly", priority: 0.7 },
     { url: `${BASE}/prices`, lastModified: "2026-07-17", changeFrequency: "weekly", priority: 0.6 },
