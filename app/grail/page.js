@@ -218,7 +218,7 @@ export default function GrailPage() {
                 <div className="chk-sec-count">{d} / {t} · {pct(d, t)}%</div>
               </div>
               <div className="pbar"><span style={{ width: `${pct(d, t)}%` }} /></div>
-              <div className="grail-grid">
+              <div className="grail-grid gr-wide">
                 {items.map((x) => {
                   const on = collected.has(x.id);
                   const stats = UNIQUE_STATS[x.id];
