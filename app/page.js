@@ -29,6 +29,8 @@ const HUB = [
   { href: "/prices", label: "시세 지수", desc: "룬·주요 아이템 시세 지수" },
   { href: "/cube", label: "호라드릭 큐브", desc: "큐브 조합법 검색" },
   { href: "/planner", label: "룬 재고", desc: "룬워드 제작에 필요한 룬 재고 계산" },
+  { href: "/rune-plan", label: "룬 추천", desc: "내 룬으로 완성에 가까운 룬워드 추천 · 룬별 역참조" },
+  { href: "/blog", label: "블로그", desc: "게임 데이터 근거 파밍·공략 가이드" },
   { href: "/backup", label: "백업", desc: "개인 진행 데이터 JSON 내보내기·복원" },
 ];
 
