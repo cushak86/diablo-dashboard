@@ -73,8 +73,62 @@ t("groupLadder — 같은 group을 level 오름차순으로(Desecrated 변형 = 
 });
 
 // ── ② 데이터 정합 (lib/farm-targets.js) ──────────────────────────────────
-t("1차 목표 10개 (기획 §5)", () => {
-  assert.equal(FARM_TARGETS.length, 10);
+t("목표 25개 (1차 10 + 2차 15 = planner 승인 전량)", () => {
+  assert.equal(FARM_TARGETS.length, 25);
+});
+
+t("타입 분포 — 룬 11 · 룬워드 재료 8 · 고유 6 (planner A8+B11+C6)", () => {
+  const by = (ty) => FARM_TARGETS.filter((x) => x.type === ty).length;
+  assert.equal(by("rune"), 11);
+  assert.equal(by("runeword-mat"), 8);
+  assert.equal(by("unique"), 6);
+});
+
+t("uberOnly(안니·토치) — 스팟 0·tcPath 없음·warn 있음·qlvl 110 (일반 드롭 불가 확정)", () => {
+  const uber = FARM_TARGETS.filter((x) => x.uberOnly);
+  assert.deepEqual(uber.map((x) => x.id).sort(), ["unique-annihilus", "unique-hellfire-torch"]);
+  for (const x of uber) {
+    assert.equal(x.spots.plain.length + x.spots.tz.length, 0, `${x.id}: uberOnly면 스팟 0`);
+    assert.equal(x.tcPath, null, `${x.id}: uberOnly면 tcPath 없음(떨어지지 않으므로)`);
+    assert.ok(x.warn, `${x.id}: 사유(warn) 있어야`);
+    assert.equal(x.qlvl, 110);
+    assert.ok(x.rewardSource, `${x.id}: 출처(rewardSource) 있어야 — 화면 안내에 쓴다`);
+  }
+  // 안니≠토치: 두 우버 아이템의 출처가 서로 달라야 한다(codex 지적 — 같은 이벤트로 오안내 방지).
+  const anni = FARM_TARGETS.find((x) => x.id === "unique-annihilus");
+  const torch = FARM_TARGETS.find((x) => x.id === "unique-hellfire-torch");
+  assert.notEqual(anni.rewardSource, torch.rewardSource, "안니(우버 디아블로)와 토치(우버 트리스트람)는 다른 이벤트");
+  assert.ok(anni.rewardSource.includes("디아블로"));
+  assert.ok(torch.rewardSource.includes("트리스트람"));
+});
+
+t("유니크 qlvl 필터 — 표시한 plain 스팟은 전부 몬스터 레벨 ≥ qlvl (근거 있는 것만)", () => {
+  const bad = [];
+  for (const x of FARM_TARGETS.filter((x) => x.type === "unique" && x.qlvl)) {
+    for (const id of x.spots.plain) {
+      const s = SPOTS[id];
+      if (!(s.mlvl >= x.qlvl)) bad.push(`${x.id}: ${id}(mlvl ${s.mlvl}) < qlvl ${x.qlvl}`);
+    }
+  }
+  assert.deepEqual(bad, []);
+});
+
+t("유니크 qlvl 필터 완결성 — plain=레벨충족·tz=레벨미달, 7스팟 전부 분류(임의 누락 금지)", () => {
+  // mara·gheed 베이스(목걸이·거대부적)는 7스팟 전부 도달(§5 덤프 대조로 별도 검증). 여기선 mlvl로 plain/tz가
+  // 완전 분할되는지 본다 — plain=mlvl≥qlvl, tz=mlvl<qlvl. 어느 한쪽에서 스팟이 사라지면 잡힌다.
+  const plainExp = (qlvl) => Object.entries(SPOTS).filter(([, s]) => s.mlvl >= qlvl).map(([id]) => id).sort();
+  const tzExp = (qlvl) => Object.entries(SPOTS).filter(([, s]) => s.mlvl < qlvl).map(([id]) => id).sort();
+  for (const [id, qlvl] of [["unique-mara", 80], ["unique-gheeds", 70]]) {
+    const t2 = FARM_TARGETS.find((x) => x.id === id);
+    assert.deepEqual([...t2.spots.plain].sort(), plainExp(qlvl), `${id} plain`);
+    assert.deepEqual([...t2.spots.tz].sort(), tzExp(qlvl), `${id} tz`);
+    assert.equal(t2.spots.plain.length + t2.spots.tz.length, Object.keys(SPOTS).length, `${id} 7스팟 전부 분류`);
+  }
+});
+
+t("SPOTS 전부 mlvl·monId 보유 (유니크 레벨 판정의 근거)", () => {
+  const bad = Object.entries(SPOTS).filter(([, s]) => !Number.isInteger(s.mlvl) || !s.monId).map(([id]) => id);
+  assert.deepEqual(bad, []);
 });
 
 t("id 중복 0 — id는 링크·체크가 물리는 안정 키다", () => {
@@ -179,17 +233,17 @@ t("chosung — 한글 초성 추출", () => {
   assert.equal(chosung("Ber"), "Ber"); // 한글 아니면 그대로
 });
 
-t("검색 S5 — 1차 10목표 전부 한글명으로 조회된다", () => {
+t("검색 S5 — 전 목표 한글명으로 조회된다", () => {
   const miss = FARM_TARGETS.filter((x) => !searchTargets(x.kr).some((r) => r.id === x.id)).map((x) => x.id);
   assert.deepEqual(miss, []);
 });
 
-t("검색 S5 — 10목표 전부 영문명으로 조회된다", () => {
+t("검색 S5 — 전 목표 영문명으로 조회된다", () => {
   const miss = FARM_TARGETS.filter((x) => !searchTargets(x.en).some((r) => r.id === x.id)).map((x) => x.id);
   assert.deepEqual(miss, []);
 });
 
-t("검색 S5 — 10목표 전부 초성으로 조회된다", () => {
+t("검색 S5 — 전 목표 초성으로 조회된다", () => {
   const miss = FARM_TARGETS.filter((x) => !searchTargets(chosung(x.kr)).some((r) => r.id === x.id)).map((x) => x.id);
   assert.deepEqual(miss, []);
 });
@@ -275,17 +329,30 @@ if (fs.existsSync(DUMP)) {
       const l = groupLadder(g, tc).filter((r) => r.tc.includes("(H)"));
       return l.length ? l[l.length - 1].tc : t3;
     };
+    // 공포의 영역 지옥 몬스터 레벨 상한(desecratedzones expansion.hell bound_incl_max). qlvl 유니크의 TZ 도달 판정용.
+    const TZ_MAX = 96;
     const bad = [];
     for (const t2 of FARM_TARGETS) {
-      const codes = t2.itemCode ? [t2.itemCode] : null;
-      if (!codes) continue; // 룬워드 재료는 runes[]가 여러 개 — tcPath 검증으로 충분
+      if (!t2.itemCode) continue; // 룬워드 재료·저급묶음은 tcPath 검증으로 충분
+      const gate = t2.qlvl || 0; // 유니크는 qlvl로 plain/tz가 갈린다(룬은 gate=0 → 베이스 도달성으로)
       for (const id of t2.spots.plain) {
-        if (!expandLeaves(SPOTS[id].tc, tc).has(t2.itemCode)) bad.push(`${t2.id}: ${id} plain 주장했으나 원본에 경로 없음`);
+        const s = SPOTS[id];
+        if (!expandLeaves(s.tc, tc).has(t2.itemCode)) bad.push(`${t2.id}: ${id} plain인데 원본에 베이스 경로 없음`);
+        if (gate && s.mlvl < gate) bad.push(`${t2.id}: ${id} plain인데 mlvl ${s.mlvl} < qlvl ${gate}`);
       }
       for (const id of t2.spots.tz) {
         const s = SPOTS[id];
-        if (expandLeaves(s.tc, tc).has(t2.itemCode)) bad.push(`${t2.id}: ${id} TZ전용 주장했으나 비TZ로도 도달`);
-        if (s.tcTz && !expandLeaves(top(s.tcTz), tc).has(t2.itemCode)) bad.push(`${t2.id}: ${id} TZ 경로 없음`);
+        if (gate) {
+          // qlvl 유니크의 TZ전용 = 평시 레벨 미달(mlvl<qlvl)이나 공포의 영역 상승(qlvl≤TZ_MAX)으로 조건 도달 + 베이스 경로 존재.
+          if (s.mlvl >= gate) bad.push(`${t2.id}: ${id} TZ전용 주장했으나 평시 mlvl ${s.mlvl} ≥ qlvl ${gate}(평시 가능해야 함)`);
+          if (gate > TZ_MAX) bad.push(`${t2.id}: ${id} qlvl ${gate} > TZ 상한 ${TZ_MAX}(TZ로도 불가)`);
+          const okBase = expandLeaves(s.tc, tc).has(t2.itemCode) || (s.tcTz && expandLeaves(top(s.tcTz), tc).has(t2.itemCode));
+          if (!okBase) bad.push(`${t2.id}: ${id} 베이스 코드 경로 없음`);
+        } else {
+          // 룬: TZ전용 = 평시 미도달 + Desecrated 도달.
+          if (expandLeaves(s.tc, tc).has(t2.itemCode)) bad.push(`${t2.id}: ${id} TZ전용 주장했으나 비TZ로도 도달`);
+          if (s.tcTz && !expandLeaves(top(s.tcTz), tc).has(t2.itemCode)) bad.push(`${t2.id}: ${id} TZ 경로 없음`);
+        }
       }
     }
     assert.deepEqual(bad, []);
@@ -294,6 +361,26 @@ if (fs.existsSync(DUMP)) {
   t("샤코 베이스 uap는 1345개 TC 어디에도 없다(파일럿 실패 근거의 재확인)", () => {
     assert.deepEqual(directParents("uap", tc), []);
     assert.equal(expandLeaves("Countess (H)", tc).has("uap"), false);
+  });
+
+  t("SPOTS.mlvl이 monstats Level(H)와 일치한다(유니크 qlvl 판정의 근거 — 매직넘버 아님)", () => {
+    const MS = path.join(process.cwd(), ".d2data", "monstats.json");
+    if (!fs.existsSync(MS)) { console.log("       (monstats.json 없음 — 건너뜀)"); return; }
+    const raw = JSON.parse(fs.readFileSync(MS, "utf8"));
+    const ms = Array.isArray(raw) ? raw : Object.values(raw);
+    const lvl = {};
+    for (const m of ms) if (m.Id) lvl[m.Id] = m["Level(H)"];
+    const bad = [];
+    for (const [id, s] of Object.entries(SPOTS)) {
+      if (lvl[s.monId] !== s.mlvl) bad.push(`${id}: SPOTS ${s.mlvl} ≠ monstats(${s.monId}) ${lvl[s.monId]}`);
+    }
+    assert.deepEqual(bad, []);
+  });
+
+  t("안니·토치 qlvl 110 > 지옥 최고 몬스터 레벨(=99, 바알) — 일반 드롭 불가가 데이터로 성립", () => {
+    const maxMlvl = Math.max(...Object.values(SPOTS).map((s) => s.mlvl));
+    assert.equal(maxMlvl, 99);
+    for (const x of FARM_TARGETS.filter((x) => x.uberOnly)) assert.ok(x.qlvl > maxMlvl);
   });
 } else {
   console.log("\n  [원본 대조] .d2data/ 없음 — 덤프 스냅샷 건너뜀 (node scripts/extract-farm-data.mjs 로 받는다)");

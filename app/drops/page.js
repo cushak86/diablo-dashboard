@@ -119,7 +119,19 @@ function TargetCard({ target }) {
         </div>
       )}
 
-      {rows.length === 0 && (
+      {rows.length === 0 && target.uberOnly && (
+        <div className="fm-sec">
+          {/* 우버 전용은 "모른다"가 아니라 "일반 드롭이 없다는 걸 안다"는 확정 사실 → ⚠(불확실)이 아니라 안내로 표기.
+              출처(우버 디아블로 vs 우버 트리스트람)는 아이템마다 다르므로 target.rewardSource로 개별 표기. */}
+          <p className="zen rp-warn">
+            이 아이템은 <b>일반 몬스터 드롭으로는 나오지 않습니다</b> — 만들어지려면 아이템 레벨 110이 필요한데,
+            일반 사냥 대상 몬스터는 지옥에서도 최고 99입니다.
+            {target.rewardSource && <> <b>{target.rewardSource}</b> 처치 보상 전용입니다.</>}
+          </p>
+        </div>
+      )}
+
+      {rows.length === 0 && !target.uberOnly && (
         <div className="fm-sec">
           <p className="zen gr-warn">
             ⚠ 어디서 나오는지 데이터로 확정하지 못했습니다.
