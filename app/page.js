@@ -32,9 +32,27 @@ const HUB = [
   { href: "/backup", label: "백업", desc: "개인 진행 데이터 JSON 내보내기·복원" },
 ];
 
+// WebSite 구조화 데이터(JSON-LD). SearchAction(사이트링크 검색박스)은 `?q=` 검색 결과 URL이
+// 실제로 없어서 넣지 않는다(유효하지 않은 마크업은 해가 된다). Organization 로고도 정사각 로고
+// 자산이 없어 생략 — 실재하는 것만 표기한다.
+const LD = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: "디아블로2 레저렉션 통합 대시보드",
+  alternateName: "D2R 대시보드",
+  url: "https://diablo-dashboard-phi.vercel.app/",
+  description:
+    "디아블로2 레저렉션(D2R) 올인원 대시보드 — 공포의 영역 시간표, 빌드 가이드, 룬워드·홀리그레일·신규 아이템, 파밍·드롭 위치, 프레임 기준, 큐브, 룬 재고.",
+  inLanguage: "ko",
+};
+
 export default function HomePage() {
   return (
     <main>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(LD) }}
+      />
       <div className="wrap stack">
         <div className="card">
           <div className="eyebrow gold">디아블로2 레저렉션 통합 대시보드</div>
