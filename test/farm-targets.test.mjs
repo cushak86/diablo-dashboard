@@ -172,6 +172,19 @@ t("모든 목표에 evidence(왜 인기인가)가 있다", () => {
   assert.deepEqual(FARM_TARGETS.filter((x) => !x.evidence).map((x) => x.id), []);
 });
 
+t("룬워드 재료 목표는 선호 베이스(bases)를 1개 이상 갖는다 — '재료'만으로는 부족(사장님 지시)", () => {
+  const bad = FARM_TARGETS.filter((x) => x.type === "runeword-mat")
+    .filter((x) => !Array.isArray(x.bases) || x.bases.length === 0 || x.bases.some((b) => !b.kr))
+    .map((x) => x.id);
+  assert.deepEqual(bad, []);
+});
+
+t("참 룬 표시명 확정(2026-07-18 사장님) — 샴은 alias로만", () => {
+  const cham = FARM_TARGETS.find((x) => x.id === "rune-cham");
+  assert.equal(cham.kr, "참 룬");
+  assert.ok(cham.alias.includes("샴 룬"), "검색 도달용으로 샴 룬은 alias에 유지");
+});
+
 t("SoJ 7곳 · 샤코는 armoNN 크랙으로 7곳 해결(2026-07-18 — round-1 '0곳' 정정)", () => {
   const soj = FARM_TARGETS.find((x) => x.id === "unique-soj");
   const shako = FARM_TARGETS.find((x) => x.id === "unique-shako");

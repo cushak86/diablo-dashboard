@@ -171,6 +171,21 @@ function TargetCard({ target }) {
         </details>
       )}
 
+      {target.bases && target.bases.length > 0 && (
+        <div className="fm-sec">
+          <div className="lbl">선호 베이스</div>
+          <div className="chips">
+            {target.bases.map((b, i) => (
+              <span className="chip" key={i}>
+                {target.bases.length > 1 ? `${["①", "②", "③"][i] || i + 1} ` : ""}
+                {b.kr}
+                {b.why && <span className="en"> · {b.why}</span>}
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {target.note && (
         <p className="ti-meta" style={{ marginTop: 14 }}>
           {target.note}
