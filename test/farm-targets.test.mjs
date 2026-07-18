@@ -73,15 +73,15 @@ t("groupLadder — 같은 group을 level 오름차순으로(Desecrated 변형 = 
 });
 
 // ── ② 데이터 정합 (lib/farm-targets.js) ──────────────────────────────────
-t("목표 37개 (1차 10 + 2차 15 + D1 장신구 8 + D1 방어구 4[샤코는 기존 정정])", () => {
-  assert.equal(FARM_TARGETS.length, 37);
+t("목표 46개 (룬11 + 재료8 + 고유27)", () => {
+  assert.equal(FARM_TARGETS.length, 46);
 });
 
-t("타입 분포 — 룬 11 · 룬워드 재료 8 · 고유 18", () => {
+t("타입 분포 — 룬 11 · 룬워드 재료 8 · 고유 27", () => {
   const by = (ty) => FARM_TARGETS.filter((x) => x.type === ty).length;
   assert.equal(by("rune"), 11);
   assert.equal(by("runeword-mat"), 8);
-  assert.equal(by("unique"), 18);
+  assert.equal(by("unique"), 27);
 });
 
 t("uberOnly(안니·토치) — 스팟 0·tcPath 없음·warn 있음·qlvl 110 (일반 드롭 불가 확정)", () => {
@@ -194,23 +194,25 @@ t("SoJ 7곳 · 샤코는 armoNN 크랙으로 7곳 해결(2026-07-18 — round-1 
   assert.equal(shako.baseLevel, 58, "방어구 유니크는 baseLevel(armor.json)로 판정");
 });
 
-t("방어구 유니크 규칙 — plain 스팟은 armoMax≥baseLevel AND mlvl≥qlvl (근거 있는 것만)", () => {
-  // 방어구 유니크 = baseLevel 보유(직접 잎 아님). 표시한 plain이 두 게이트를 모두 만족하는지.
+// 방어구=armoMax, 무기(weaponBase)=weapMax 게이트. baseLevel 보유 유니크는 직접 잎이 아니라 밴드로 판정.
+const bandMaxOf = (s, x) => (x.weaponBase ? s.weapMax : s.armoMax);
+
+t("방어구·무기 유니크 규칙 — plain 스팟은 (armo/weap)Max≥baseLevel AND mlvl≥qlvl", () => {
   const bad = [];
   for (const x of FARM_TARGETS.filter((x) => x.type === "unique" && x.baseLevel)) {
     for (const id of x.spots.plain) {
       const s = SPOTS[id];
-      if (!(s.armoMax >= x.baseLevel)) bad.push(`${x.id}: ${id} armoMax ${s.armoMax} < baseLevel ${x.baseLevel}`);
+      if (!(bandMaxOf(s, x) >= x.baseLevel)) bad.push(`${x.id}: ${id} bandMax ${bandMaxOf(s, x)} < baseLevel ${x.baseLevel}`);
       if (!(s.mlvl >= x.qlvl)) bad.push(`${x.id}: ${id} mlvl ${s.mlvl} < qlvl ${x.qlvl}`);
     }
   }
   assert.deepEqual(bad, []);
 });
 
-t("방어구 유니크 완결성 — 두 게이트를 만족하는 스팟은 빠짐없이 실렸다(임의 누락 금지)", () => {
+t("방어구·무기 유니크 완결성 — 두 게이트 만족 스팟은 빠짐없이 실렸다(임의 누락 금지)", () => {
   const bad = [];
   for (const x of FARM_TARGETS.filter((x) => x.type === "unique" && x.baseLevel)) {
-    const expect = Object.entries(SPOTS).filter(([, s]) => s.armoMax >= x.baseLevel && s.mlvl >= x.qlvl).map(([id]) => id).sort();
+    const expect = Object.entries(SPOTS).filter(([, s]) => bandMaxOf(s, x) >= x.baseLevel && s.mlvl >= x.qlvl).map(([id]) => id).sort();
     const got = [...x.spots.plain].sort();
     if (JSON.stringify(got) !== JSON.stringify(expect)) bad.push(`${x.id}: ${JSON.stringify(got)} ≠ 규칙 ${JSON.stringify(expect)}`);
   }
@@ -416,16 +418,21 @@ if (fs.existsSync(DUMP)) {
     assert.deepEqual(bad, []);
   });
 
-  t("방어구 유니크 baseLevel이 armor.json[code].level과 일치한다(날조 방지)", () => {
-    const AR = path.join(process.cwd(), ".d2data", "armor.json");
-    if (!fs.existsSync(AR)) { console.log("       (armor.json 없음 — 건너뜀)"); return; }
-    const raw = JSON.parse(fs.readFileSync(AR, "utf8"));
-    const arr = Array.isArray(raw) ? raw : Object.values(raw);
-    const lvlOf = {};
-    for (const a of arr) lvlOf[a.code] = a.level;
+  t("유니크 baseLevel이 armor.json / weapons.json[code].level과 일치한다(날조 방지)", () => {
+    const lvlFrom = (file) => {
+      const fp = path.join(process.cwd(), ".d2data", file);
+      if (!fs.existsSync(fp)) return null;
+      const raw = JSON.parse(fs.readFileSync(fp, "utf8"));
+      const map = {};
+      for (const a of (Array.isArray(raw) ? raw : Object.values(raw))) map[a.code] = a.level;
+      return map;
+    };
+    const armorLvl = lvlFrom("armor.json"), weapLvl = lvlFrom("weapons.json");
     const bad = [];
     for (const x of FARM_TARGETS.filter((x) => x.baseLevel)) {
-      if (lvlOf[x.itemCode] !== x.baseLevel) bad.push(`${x.id}: baseLevel ${x.baseLevel} ≠ armor.json(${x.itemCode}) ${lvlOf[x.itemCode]}`);
+      const map = x.weaponBase ? weapLvl : armorLvl;
+      if (!map) { console.log(`       (${x.weaponBase ? "weapons" : "armor"}.json 없음 — ${x.id} 건너뜀)`); continue; }
+      if (map[x.itemCode] !== x.baseLevel) bad.push(`${x.id}: baseLevel ${x.baseLevel} ≠ ${x.weaponBase ? "weapons" : "armor"}.json(${x.itemCode}) ${map[x.itemCode]}`);
     }
     assert.deepEqual(bad, []);
   });
