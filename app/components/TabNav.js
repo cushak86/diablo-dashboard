@@ -26,7 +26,6 @@ const TABS = [
   { href: "/cube", label: "호라드릭 큐브" },
   { href: "/planner", label: "룬 재고" },
   { href: "/rune-plan", label: "룬 추천" },
-  { href: "/blog", label: "블로그" },
   { href: "/backup", label: "백업" },
 ];
 

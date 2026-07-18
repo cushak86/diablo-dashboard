@@ -1,5 +1,3 @@
-import { getAllPosts } from "../lib/blog";
-
 const BASE = "https://diablo-dashboard-phi.vercel.app";
 
 // lastModified는 페이지별 실제 변경일 상수다. `new Date()`를 쓰면 이 라우트가 빌드 시점에 정적
@@ -21,13 +19,6 @@ export default function sitemap() {
     { url: `${BASE}/drops`, lastModified: "2026-07-17", changeFrequency: "monthly", priority: 0.6 },
     { url: `${BASE}/planner`, lastModified: "2026-07-18", changeFrequency: "monthly", priority: 0.5 },
     { url: `${BASE}/rune-plan`, lastModified: "2026-07-18", changeFrequency: "monthly", priority: 0.5 },
-    { url: `${BASE}/blog`, lastModified: "2026-07-18", changeFrequency: "weekly", priority: 0.6 },
-    ...getAllPosts().map((p) => ({
-      url: `${BASE}/blog/${p.slug}`,
-      lastModified: p.date || "2026-07-18",
-      changeFrequency: "monthly",
-      priority: 0.6,
-    })),
     { url: `${BASE}/privacy`, lastModified: "2026-07-18", changeFrequency: "yearly", priority: 0.2 },
   ];
   // 제외: /backup(개인 데이터 도구, layout.js에서 noindex) · /admin·/docs(비공개)

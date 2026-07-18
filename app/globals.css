@@ -479,13 +479,6 @@ footer{text-align:center;color:#5a5a5a;font-size:12px;padding:10px 0 30px}
   background:rgba(199,179,119,.1);border-radius:6px;padding:2px 8px;text-decoration:none}
 .rp-golink:hover{border-color:rgba(199,179,119,.7)}
 
-/* ── 블로그(/blog) ── */
-.blog-card{display:block;text-decoration:none;transition:border-color .12s,transform .12s}
-.blog-card:hover{border-color:rgba(217,196,139,.35)}
-.blog-date{font-size:12px;color:#7c7c7c;font-variant-numeric:tabular-nums}
-.blog-title{font-size:18px;font-weight:800;color:var(--parch);margin-top:4px;line-height:1.35}
-.blog-excerpt{font-size:13.5px;color:#9a9a9a;margin-top:8px;line-height:1.6}
-
 /* ── 룬 추천(/rune-plan) — rw-rune 위에 상호작용/보유·선택 강조만 얹는다. 신규 색 없음 ── */
 .rs-chip{cursor:pointer}
 .rs-chip.has{color:#e0c58a;border-color:rgba(199,179,119,.5);background:rgba(199,179,119,.16)}
