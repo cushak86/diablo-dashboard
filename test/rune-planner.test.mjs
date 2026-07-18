@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 import { RUNES, needCount } from "../lib/cube.js";
 import { RW } from "../lib/runewords.js";
-import { STATUS, aggregate, plan, planRuneword } from "../lib/rune-planner.js";
+import { STATUS, aggregate, plan, planRuneword, suggest, sanitizeStock } from "../lib/rune-planner.js";
 
 const IDX = {};
 RUNES.forEach(([name], i) => { IDX[name] = i; });
@@ -196,6 +196,69 @@ try {
 const all = RW.map((r) => planRuneword(r, { Jah: 1, Ber: 2, Sur: 3, Lo: 4, Ohm: 5, El: 200 }));
 console.log(`\n전체 ${RW.length}종 판정: READY ${all.filter((r) => r.status === STATUS.READY).length} · ` +
   `CUBABLE ${all.filter((r) => r.status === STATUS.CUBABLE).length} · SHORT ${all.filter((r) => r.status === STATUS.SHORT).length}`);
+
+// ── suggest(): 제안 정렬·파생 필드 계약 ──
+try {
+  // 완성/큐브가능은 shortCount=0으로 맨 앞. 부족은 부족 개수 오름차순. Ber1개부족 < Ber2개부족.
+  const inv = { Tir: 1, El: 1, Ber: 1, Mal: 1, Ist: 1 };
+  const rows = suggest(RW, inv);
+  // 순수성: 입력 재고 불변.
+  assert.deepEqual(inv, { Tir: 1, El: 1, Ber: 1, Mal: 1, Ist: 1 }, "suggest가 입력 재고를 변형했다");
+  // 모든 룬워드 포함.
+  assert.equal(rows.length, RW.length);
+  // 정렬 단조성: 상태 랭크(즉시0<큐브1<부족2)·shortCount 모두 비내림차순.
+  const RANK = { [STATUS.READY]: 0, [STATUS.CUBABLE]: 1, [STATUS.SHORT]: 2 };
+  for (let i = 1; i < rows.length; i++) {
+    assert.equal(RANK[rows[i].status] >= RANK[rows[i - 1].status], true, "상태 랭크 정렬이 깨졌다");
+    assert.equal(rows[i].shortCount >= rows[i - 1].shortCount, true, "shortCount 정렬이 깨졌다");
+  }
+  // Steel(Tir+El)은 재고로 즉시 → shortCount 0, usesOwned true, 맨 앞 그룹.
+  const steel = rows.find((r) => r.rw.en === "Steel");
+  assert.equal(steel.shortCount, 0);
+  assert.equal(steel.usesOwned, true);
+  assert.equal(steel.status, STATUS.READY);
+  // Infinity(Ber×2 Mal Ist): Ber 1개 부족 → shortCount 1, 내 Ber·Mal·Ist 소비 → usesOwned true.
+  const inf = rows.find((r) => r.rw.en === "Infinity");
+  assert.equal(inf.shortCount, 1);
+  assert.deepEqual(inf.missing, [{ rune: "Ber", count: 1 }]);
+  assert.equal(inf.usesOwned, true);
+  // 내 재고를 하나도 안 쓰는 룬워드는 usesOwned=false (필터로 걸러질 대상).
+  const noneOwned = rows.find((r) => !r.usesOwned);
+  assert.equal(Object.keys(noneOwned.consumed).length, 0, "usesOwned=false면 consumed가 비어야 한다");
+  // distance 타이브레이크: 빈 재고에서 El 2개(Steel=Tir+El… 아니라) — Zod부족 > El부족 거리.
+  const empty = suggest(RW, {});
+  const zi = empty.findIndex((r) => r.rw.en === "Last Wish"); // Jah×3 Mal Sur Ber = 큰 거리
+  const si = empty.findIndex((r) => r.rw.en === "Steel");     // Tir El = 작은 거리
+  assert.equal(si < zi, true, "빈 재고에서 거리가 작은 Steel이 Last Wish보다 앞서야 한다");
+  console.log("  ok  suggest — 정렬·shortCount·usesOwned·distance·순수성");
+} catch (e) {
+  failed += 1;
+  console.log(`  FAIL suggest\n       ${e.message}`);
+}
+
+// ── sanitizeStock(): 오염된 localStorage를 렌더 죽이지 않게 정화 (codex 감사 대응) ──
+try {
+  assert.deepEqual(sanitizeStock(null), {}, "null → {}");
+  assert.deepEqual(sanitizeStock([]), {}, "배열 → {}");
+  assert.deepEqual(sanitizeStock("x"), {}, "문자열 → {}");
+  assert.deepEqual(sanitizeStock({ El: "1" }), {}, "문자열 값 → 버림");
+  assert.deepEqual(sanitizeStock({ El: 2.5 }), {}, "소수 → 버림");
+  assert.deepEqual(sanitizeStock({ El: -1 }), {}, "음수 → 버림");
+  assert.deepEqual(sanitizeStock({ El: 0 }), {}, "0 → 버림(앱은 0을 저장하지 않음)");
+  assert.deepEqual(sanitizeStock({ El: NaN }), {}, "NaN → 버림");
+  assert.deepEqual(sanitizeStock({ El: 2 ** 53 }), {}, "unsafe integer → 버림");
+  assert.deepEqual(sanitizeStock({ NotARune: 3 }), {}, "미지 룬 → 버림");
+  assert.deepEqual(sanitizeStock(JSON.parse('{"__proto__":5}')), {}, "프로토타입 키(JSON 경로) → 버림");
+  assert.deepEqual(sanitizeStock({ Ber: 2, El: 1, Junk: 9, Ohm: 1.1 }), { Ber: 2, El: 1 },
+    "유효 룬만 남기고 오염분 제거");
+  // 정화된 결과는 suggest/planRuneword에 넣어도 throw하지 않아야 한다.
+  const clean = sanitizeStock({ Ber: 1, Bad: "x" });
+  assert.doesNotThrow(() => suggest(RW, clean));
+  console.log("  ok  sanitizeStock — 오염 형태 방어(null·배열·문자열·소수·음수·미지룬·프로토타입)");
+} catch (e) {
+  failed += 1;
+  console.log(`  FAIL sanitizeStock\n       ${e.message}`);
+}
 
 console.log(failed === 0 ? "\n전부 통과" : `\n실패 ${failed}건`);
 process.exit(failed === 0 ? 0 : 1);

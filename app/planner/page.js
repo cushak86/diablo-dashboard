@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { RUNES } from "../../lib/cube";
 import { RW } from "../../lib/runewords";
-import { STATUS, planRuneword } from "../../lib/rune-planner";
+import { STATUS, planRuneword, sanitizeStock } from "../../lib/rune-planner";
 import { schedulePush } from "../../lib/sync";
 
 const LS_KEY = "runes:v1";
@@ -24,7 +24,7 @@ export default function PlannerPage() {
   useEffect(() => {
     try {
       const raw = localStorage.getItem(LS_KEY);
-      if (raw) setStock(JSON.parse(raw));
+      if (raw) setStock(sanitizeStock(JSON.parse(raw)));
     } catch {}
   }, []);
 
@@ -84,33 +84,51 @@ export default function PlannerPage() {
 
         <div className="card">
           <div className="eyebrow blood">룬 재고 입력</div>
-          <div className="rp-grid">
+          <p className="zen rp-hint">
+            룬을 <b>누르면 1개씩</b> 채워집니다. 보유한 룬은 <b>−</b> 버튼이나 숫자 칸으로 조절하세요.
+          </p>
+          <div className="rp-grid" role="group" aria-label="룬 재고 입력">
             {RUNES.map(([name], i) => {
               const v = stock[name] || 0;
               return (
                 <div key={name} className={`rp-cell ${v > 0 ? "on" : ""}`}>
-                  <div className="rp-cell-name">
-                    <span className="rp-idx">{i + 1}</span> {name}
-                  </div>
-                  <div className="rp-stepper">
-                    <button className="rp-btn" onClick={() => setCount(name, v - 1)} aria-label={`${name} 감소`}>−</button>
-                    <input
-                      className="rp-num"
-                      type="number"
-                      min="0"
-                      max={MAX}
-                      value={v}
-                      onChange={(e) => setCount(name, parseInt(e.target.value, 10))}
-                      aria-label={`${name} 개수`}
-                    />
-                    <button className="rp-btn" onClick={() => setCount(name, v + 1)} aria-label={`${name} 증가`}>+</button>
-                  </div>
+                  <button
+                    type="button"
+                    className="rp-fill"
+                    onClick={() => setCount(name, v + 1)}
+                    aria-label={v > 0 ? `${name} 보유 ${v}개, 누르면 1개 추가` : `${name} 추가`}
+                  >
+                    <span className="rp-cell-name">
+                      <span className="rp-idx">{i + 1}</span> {name}
+                    </span>
+                    {v > 0 && <span className="rp-badge">{v}</span>}
+                  </button>
+                  {v > 0 && (
+                    <div className="rp-ctrl">
+                      <button
+                        type="button"
+                        className="rp-btn"
+                        onClick={(e) => { e.stopPropagation(); setCount(name, v - 1); }}
+                        aria-label={`${name} 1개 제거`}
+                      >−</button>
+                      <input
+                        className="rp-num"
+                        type="number"
+                        min="0"
+                        max={MAX}
+                        value={v}
+                        onChange={(e) => setCount(name, parseInt(e.target.value, 10))}
+                        aria-label={`${name} 개수 직접 입력`}
+                      />
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
           <div className="rp-toolbar">
             <span className="rw-mtag">보유 룬 {total}개</span>
+            <a className="rp-golink" href="/rune-plan">룬 추천 보기 →</a>
             <button className="chk-reset" onClick={reset}>재고 비우기</button>
           </div>
         </div>
