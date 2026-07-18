@@ -60,7 +60,8 @@ export default function HomePage() {
         </div>
 
         <div className="note">
-          외부 실시간 데이터(테러존·시세)는 공개 API를 프록시하며, 개인 데이터는 서버에 저장하지 않습니다.
+          외부 실시간 데이터(테러존·시세)는 공개 API를 프록시하며, 개인 진행 데이터는 브라우저에 로컬 저장됩니다.
+          자세한 내용은 <Link href="/privacy" style={{ color: "var(--gold)" }}>개인정보처리방침</Link>을 참고하세요.
           문의·오류 제보는 각 페이지의 제보 기능을 이용해 주세요.
         </div>
       </div>
