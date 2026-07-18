@@ -73,15 +73,15 @@ t("groupLadder — 같은 group을 level 오름차순으로(Desecrated 변형 = 
 });
 
 // ── ② 데이터 정합 (lib/farm-targets.js) ──────────────────────────────────
-t("목표 25개 (1차 10 + 2차 15 = planner 승인 전량)", () => {
-  assert.equal(FARM_TARGETS.length, 25);
+t("목표 33개 (1차 10 + 2차 15 + D1 장신구 8)", () => {
+  assert.equal(FARM_TARGETS.length, 33);
 });
 
-t("타입 분포 — 룬 11 · 룬워드 재료 8 · 고유 6 (planner A8+B11+C6)", () => {
+t("타입 분포 — 룬 11 · 룬워드 재료 8 · 고유 14 (C6 + D1 장신구 8)", () => {
   const by = (ty) => FARM_TARGETS.filter((x) => x.type === ty).length;
   assert.equal(by("rune"), 11);
   assert.equal(by("runeword-mat"), 8);
-  assert.equal(by("unique"), 6);
+  assert.equal(by("unique"), 14);
 });
 
 t("uberOnly(안니·토치) — 스팟 0·tcPath 없음·warn 있음·qlvl 110 (일반 드롭 불가 확정)", () => {
