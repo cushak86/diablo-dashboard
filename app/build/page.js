@@ -31,6 +31,10 @@ const tierStyle = (t) => {
 // 티어 순서(요약 그리드 정렬). S*는 S 옆.
 const TIER_RANK = { S: 0, "S*": 1, A: 2, B: 3, C: 4, D: 5, F: 6, "—": 9 };
 
+// 추천 장비 슬롯 표기 순서. builds.js의 gear 키와 일치. 없는 슬롯은 건너뛴다.
+const SLOT_ORDER = ["투구", "갑옷", "무기", "방패", "장갑", "벨트", "신발", "반지", "목걸이", "부적"];
+const SLOT_LBL = { fontSize: 11, fontWeight: 800, color: "var(--gold)", minWidth: 32, flexShrink: 0 };
+
 export default function BuildPage() {
   const [cls, setCls] = useState("all");
   const classes = useMemo(() => allClasses(), []);
@@ -160,6 +164,28 @@ export default function BuildPage() {
                 ))}
               </div>
 
+              {b.gear && (
+                <>
+                  <div style={HD}>추천 장비 (슬롯별)</div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 4 }}>
+                    {SLOT_ORDER.filter((s) => b.gear[s]?.length).map((slot) => (
+                      <div key={slot} style={{ display: "flex", gap: 8, alignItems: "baseline" }}>
+                        <span style={SLOT_LBL}>{slot}</span>
+                        <span style={DIM}>
+                          {b.gear[slot].map((g, i) => (
+                            <span key={g.name}>
+                              {i > 0 && <span style={{ color: "#555" }}> · </span>}
+                              <b style={{ color: "var(--parch)" }}>{g.name}</b>
+                              {g.note && <span style={{ color: "#8a8a8a" }}> ({g.note})</span>}
+                            </span>
+                          ))}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+
               <div style={HD}>프레임 목표</div>
               <div style={{ ...ROW, marginBottom: 4 }}>
                 <span style={DIM}>시전 속도 {bp(b.breakpointGoal.fcr, "물리 무관")} · 타격 회복 {bp(b.breakpointGoal.fhr, "검증중")}</span>
@@ -201,6 +227,9 @@ export default function BuildPage() {
           <br />
           <b>정확도</b> — 검증이 끝나지 않은 항목은 <b>검증중</b> 배지로 고지합니다(날조 금지). 현재 검증중인
           빌드는 없습니다. 신규 직업 <b>악마술사</b>는 기술의 한국어 표기를 인게임 표기로 확정해 반영했습니다.
+          <br />
+          <b>추천 장비</b> — 슬롯별 장비는 <b>게임 사실이 아닌 추천</b>입니다(맥스롤·아이시 대조, 이견은 병기).
+          장비명은 아이템 정본과 일치시켰습니다. 악마술사는 전용 장비 공략이 확정되지 않아 장비를 <b>보류</b>했습니다.
           <br />
           <b>연결</b> — 룬워드는 <b>룬워드</b> 탭, 프레임 목표는 <b>프레임 기준</b> 탭, 룬 확보는 <b>룬 재고</b> 탭에서
           이어서 확인하세요.
