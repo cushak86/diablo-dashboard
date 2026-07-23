@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { getRedis } from "../../../lib/redis";
+import { getRedis, todayKST } from "../../../lib/redis";
 import { normalizePath } from "../../../lib/pages";
 
 export const dynamic = "force-dynamic";
 
 const MAX_DWELL_MS = 30 * 60 * 1000; // 30분 상한 — 탭 방치·이상치가 평균을 왜곡하지 않도록
+const DAILY_TTL = 2 * 24 * 60 * 60; // 일자별 키는 2일 후 자동 만료(오늘 표시용 — 키 폭발 방지)
 
 // 페이지 체류/조회 수집. 성공/무시 모두 204(beacon은 응답 본문을 읽지 않음).
 // 개발자 제외 쿠키·미허용 경로·Redis 장애 시 조용히 무기록.
@@ -35,7 +36,13 @@ export async function POST(req) {
 
   const dwell = Number(body?.dwellMs);
   try {
-    const ops = [redis.incr(`page:${path}`)];
+    // 누적 조회수 + KST 오늘자 조회수(2일 TTL). 오늘 키는 매 집계마다 TTL을 갱신한다.
+    const dayKey = `page:${path}:${todayKST()}`;
+    const ops = [
+      redis.incr(`page:${path}`),
+      redis.incr(dayKey),
+      redis.expire(dayKey, DAILY_TTL),
+    ];
     // 유효한 체류시간만 평균 산출에 반영(0·음수·비정상 제외, 상한 클램프)
     if (Number.isFinite(dwell) && dwell > 0) {
       const ms = Math.min(Math.round(dwell), MAX_DWELL_MS);
