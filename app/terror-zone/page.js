@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";
-import { mockZoneForDate, actLabel } from "../../lib/zones";
+import { mockZoneForDate, actLabel, TERROR_ZONES } from "../../lib/zones";
 import UberDiabloWidget from "../components/UberDiabloWidget";
 
 const pad = (n) => String(n).padStart(2, "0");
 const RING_C = 2 * Math.PI * 92; // 578.05
+const FAV_KEY = "tzFavorites:v1"; // 관심 공역 — zone.en 키 목록(브라우저에만 저장)
 
 /* ---------------- 사운드 ---------------- */
 function useSound(soundOn) {
@@ -56,6 +57,20 @@ function Chips({ areas }) {
     </div>
   );
 }
+function StarBtn({ on, onClick, label }) {
+  return (
+    <button
+      type="button"
+      className={`favstar ${on ? "on" : ""}`}
+      onClick={onClick}
+      aria-pressed={on}
+      aria-label={label}
+      title={on ? "관심 공역 해제" : "관심 공역으로 저장"}
+    >
+      {on ? "★" : "☆"}
+    </button>
+  );
+}
 
 /* ---------------- 메인 ---------------- */
 export default function TerrorZonePage() {
@@ -64,10 +79,34 @@ export default function TerrorZonePage() {
   const [data, setData] = useState(null);       // 서버 응답 (current/mode 등)
   const [soundOn, setSoundOn] = useState(false);
   const [banner, setBanner] = useState("");
+  const [favs, setFavs] = useState([]);        // 관심 공역 en 키 목록(하이드레이션 안전: 초기 빈)
+  const [favOnly, setFavOnly] = useState(false); // 켜면 관심 공역일 때만 알림
+  const [manageOpen, setManageOpen] = useState(false);
   const firedRef = useRef({});
   const lastHourRef = useRef(null);
   const bannerTimer = useRef(null);
   const sound = useSound(soundOn);
+
+  const isFav = useCallback((z) => !!z && favs.includes(z.en), [favs]);
+  const toggleFav = useCallback((en) => {
+    if (!en) return;
+    setFavs((prev) => {
+      const nextFavs = prev.includes(en) ? prev.filter((x) => x !== en) : [...prev, en];
+      try { localStorage.setItem(FAV_KEY, JSON.stringify(nextFavs)); } catch { /* 저장 실패 무시 */ }
+      return nextFavs;
+    });
+  }, []);
+
+  // 관심 공역 로드(마운트 후 — SSR 불일치 방지)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(FAV_KEY);
+      if (raw) {
+        const arr = JSON.parse(raw);
+        if (Array.isArray(arr)) setFavs(arr.filter((x) => typeof x === "string"));
+      }
+    } catch { /* 파싱 실패 무시 */ }
+  }, []);
 
   const fetchTZ = useCallback(async () => {
     try {
@@ -116,13 +155,20 @@ export default function TerrorZonePage() {
   useEffect(() => {
     if (lastHourRef.current !== null && lastHourRef.current !== hourKey) {
       if (isLive) fetchTZ();
-      showBanner(`공포의 영역이 변경되었습니다!`);
-      sound.chime([523, 659, 784, 1046]);
-      sound.speak(
-        isLive
-          ? "공포의 영역이 변경되었습니다. 최신 지역을 확인하세요."
-          : `공포의 영역이 변경되었습니다. 현재 지역은 ${current.kr} 입니다.`
-      );
+      const curFav = isFav(current);
+      // "관심만 알림"이 켜져 있고 현재 지역이 관심이 아니면 소리 알림은 생략(배너는 유지)
+      const silent = favOnly && !curFav;
+      showBanner(curFav ? `⭐ 관심 공역 시작 — ${current.kr}!` : `공포의 영역이 변경되었습니다!`);
+      if (!silent) {
+        sound.chime(curFav ? [784, 988, 1319, 1568] : [523, 659, 784, 1046]);
+        sound.speak(
+          curFav
+            ? `관심 공역, ${current.kr} 이 시작되었습니다.`
+            : isLive
+              ? "공포의 영역이 변경되었습니다. 최신 지역을 확인하세요."
+              : `공포의 영역이 변경되었습니다. 현재 지역은 ${current.kr} 입니다.`
+        );
+      }
     }
     lastHourRef.current = hourKey;
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -137,16 +183,25 @@ export default function TerrorZonePage() {
       { at: 300, label: "5분 전" },
       { at: 60, label: "1분 전" },
     ];
+    const nextFav = isFav(next);
     for (const m of marks) {
       if (secLeft <= m.at && secLeft > m.at - 2 && !fired.has(m.at)) {
         fired.add(m.at);
+        // "관심만 알림"이 켜져 있으면 다음 지역이 관심일 때만 알린다.
+        if (favOnly && !nextFav) continue;
         const tail = next ? ` — 다음: ${next.kr}` : "";
-        showBanner(`${m.label}${tail}`);
-        sound.beep(880, 0.16, "sine", 0.28);
-        setTimeout(() => sound.beep(660, 0.16, "sine", 0.24), 180);
+        showBanner(`${nextFav ? "⭐ " : ""}${m.label}${tail}`);
+        if (nextFav) {
+          // 관심 공역: 더 높고 눈에 띄는 전용 차임
+          sound.beep(1046, 0.16, "triangle", 0.3);
+          setTimeout(() => sound.beep(1319, 0.18, "triangle", 0.28), 170);
+        } else {
+          sound.beep(880, 0.16, "sine", 0.28);
+          setTimeout(() => sound.beep(660, 0.16, "sine", 0.24), 180);
+        }
         sound.speak(
           next
-            ? `공포의 영역 변경 ${m.label}. 다음 지역은 ${next.kr} 입니다.`
+            ? `${nextFav ? "관심 공역. " : ""}공포의 영역 변경 ${m.label}. 다음 지역은 ${next.kr} 입니다.`
             : `공포의 영역 변경 ${m.label} 입니다.`
         );
       }
@@ -196,12 +251,19 @@ export default function TerrorZonePage() {
           <button className={`btn ${soundOn ? "btn-on" : "btn-off"}`} onClick={toggleSound}>
             {soundOn ? "🔊 소리 켜짐" : "🔈 소리 켜기"}
           </button>
+          <button
+            className={`btn ${favOnly ? "btn-on" : "btn-off"}`}
+            onClick={() => setFavOnly((v) => !v)}
+            title="켜면 관심 공역(★)일 때만 소리로 알립니다"
+          >
+            {favOnly ? "⭐ 관심만 알림" : "⭐ 관심만 알림 끔"}
+          </button>
         </div>
 
         {banner && <div className="banner">📢 {banner}</div>}
 
         {/* 현재 존 */}
-        <div className="card cur">
+        <div className={`card cur ${isFav(current) ? "fav-on" : ""}`}>
           <div className="curgrid">
             <div style={{ minWidth: 0 }}>
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
@@ -211,7 +273,12 @@ export default function TerrorZonePage() {
                   {isLive ? "● 실시간" : "◈ 모의"}
                 </span>
               </div>
-              <div style={{ marginTop: 10 }}><Badge act={current.act} /></div>
+              <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
+                <Badge act={current.act} />
+                {current.en && (
+                  <StarBtn on={isFav(current)} onClick={() => toggleFav(current.en)} label="현재 공역 관심 저장" />
+                )}
+              </div>
               <h1 className="zname">{current.kr}</h1>
               <p className="zen">{current.en}</p>
               <div style={{ marginTop: 14 }}>
@@ -253,11 +320,16 @@ export default function TerrorZonePage() {
 
         {/* 다음 존 + 알림 안내 */}
         <div className="grid2">
-          <div className="card">
+          <div className={`card ${isFav(next) ? "fav-on" : ""}`}>
             <div className="eyebrow gold">다음 공포의 영역</div>
             {next ? (
               <>
-                <div style={{ marginTop: 10 }}><Badge act={next.act} /></div>
+                <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
+                  <Badge act={next.act} />
+                  {next.en && (
+                    <StarBtn on={isFav(next)} onClick={() => toggleFav(next.en)} label="다음 공역 관심 저장" />
+                  )}
+                </div>
                 <h2 className="zname" style={{ fontSize: 20, marginTop: 8 }}>{next.kr}</h2>
                 <p className="zen">{next.en}</p>
                 <div style={{ marginTop: 12 }}><Chips areas={next.areas} /></div>
@@ -288,6 +360,40 @@ export default function TerrorZonePage() {
             </div>
           </div>
         </div>
+
+        {/* 관심 공역 관리 */}
+        <details className="card gloss" open={manageOpen} onToggle={(e) => setManageOpen(e.currentTarget.open)}>
+          <summary className="gloss-sum">
+            <span className="eyebrow gold">⭐ 관심 공역 관리{favs.length ? ` · ${favs.length}곳` : ""}</span>
+            <span className="gloss-arrow" aria-hidden="true">▾</span>
+          </summary>
+          <div className="gloss-body">
+            <p className="zen" style={{ marginBottom: 12, fontSize: 13 }}>
+              자주 챙기는 파밍 지역을 별표로 저장하세요. 관심 지역이 다음/현재가 되면 <b style={{ color: "var(--parch)" }}>전용 알림·하이라이트</b>로 강조됩니다. (브라우저에만 저장)
+            </p>
+            {[1, 2, 3, 4, 5].map((act) => (
+              <div key={act} style={{ marginBottom: 10 }}>
+                <div className="lbl" style={{ marginBottom: 6 }}>{actLabel(act)}</div>
+                <div className="favlist">
+                  {TERROR_ZONES.filter((z) => z.act === act).map((z) => {
+                    const on = favs.includes(z.en);
+                    return (
+                      <button
+                        key={z.en}
+                        type="button"
+                        className={`favchip ${on ? "on" : ""}`}
+                        onClick={() => toggleFav(z.en)}
+                        aria-pressed={on}
+                      >
+                        <span aria-hidden="true">{on ? "★" : "☆"}</span> {z.kr}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+        </details>
 
         <UberDiabloWidget />
 

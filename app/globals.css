@@ -180,6 +180,18 @@ footer{text-align:center;color:#5a5a5a;font-size:12px;padding:10px 0 30px}
   border:1px solid rgba(49,130,246,.35);border-radius:8px;padding:4px 10px;cursor:pointer;
   transition:background .15s,color .15s;white-space:nowrap}
 .donate-copy:hover{background:rgba(49,130,246,.22)}
+/* 관심 공역(즐겨찾기) */
+.favstar{background:none;border:none;cursor:pointer;font-size:20px;line-height:1;padding:0 2px;
+  color:#6b6b6b;transition:color .15s,transform .1s}
+.favstar:hover{transform:scale(1.15)}
+.favstar.on{color:var(--gold);filter:drop-shadow(0 0 4px rgba(199,179,119,.5))}
+.card.fav-on{border-color:rgba(199,179,119,.55);box-shadow:0 0 0 1px rgba(199,179,119,.25) inset}
+.favlist{display:flex;flex-wrap:wrap;gap:6px}
+.favchip{display:inline-flex;align-items:center;gap:4px;font-size:12.5px;cursor:pointer;
+  border:1px solid var(--line);background:rgba(0,0,0,.25);color:#bdbdbd;border-radius:999px;
+  padding:5px 11px;transition:border-color .15s,color .15s,background .15s}
+.favchip:hover{border-color:rgba(199,179,119,.4);color:var(--parch)}
+.favchip.on{border-color:rgba(199,179,119,.6);background:rgba(199,179,119,.12);color:var(--gold);font-weight:600}
 @media(max-width:759px){.donate-btn{padding:7px 12px;font-size:12px}}
 
 /* ── 공역 페이지 상단 정적 소개(SEO/첫 방문자용) ── */
