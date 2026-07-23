@@ -2,8 +2,33 @@
 
 import { useEffect, useState } from "react";
 
+const ACCOUNT_NUMBER = "100218713216";
+
 export default function DonationButton() {
   const [open, setOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const copyAccount = async () => {
+    try {
+      if (navigator.clipboard?.writeText) {
+        await navigator.clipboard.writeText(ACCOUNT_NUMBER);
+      } else {
+        // 구형 브라우저·비보안 컨텍스트 폴백
+        const ta = document.createElement("textarea");
+        ta.value = ACCOUNT_NUMBER;
+        ta.style.position = "fixed";
+        ta.style.opacity = "0";
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+      }
+      setCopied(true);
+      setTimeout(() => setCopied(false), 1800);
+    } catch {
+      /* 복사 실패 시 조용히 무시 — 사용자는 번호를 직접 선택해 복사할 수 있음 */
+    }
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -20,7 +45,7 @@ export default function DonationButton() {
 
   return (
     <>
-      <button className="donate-btn" onClick={() => setOpen(true)}>
+      <button className="donate-btn" onClick={() => { setCopied(false); setOpen(true); }}>
         ♥ 후원하기
       </button>
 
@@ -56,8 +81,16 @@ export default function DonationButton() {
 
             <div className="donate-account">
               <span className="donate-bank">토스뱅크</span>
-              <span className="donate-num">100218713216</span>
+              <span className="donate-num">{ACCOUNT_NUMBER}</span>
               <span className="donate-name">이*훈</span>
+              <button
+                type="button"
+                className="donate-copy"
+                onClick={copyAccount}
+                aria-label="계좌번호 복사"
+              >
+                {copied ? "✓ 복사됨" : "복사"}
+              </button>
             </div>
           </div>
         </div>

@@ -176,6 +176,10 @@ footer{text-align:center;color:#5a5a5a;font-size:12px;padding:10px 0 30px}
 .donate-num{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:15px;font-weight:700;
   color:var(--parch);letter-spacing:.02em}
 .donate-name{font-size:13px;color:#cfcfcf}
+.donate-copy{font-size:12px;font-weight:700;color:#3182f6;background:rgba(49,130,246,.12);
+  border:1px solid rgba(49,130,246,.35);border-radius:8px;padding:4px 10px;cursor:pointer;
+  transition:background .15s,color .15s;white-space:nowrap}
+.donate-copy:hover{background:rgba(49,130,246,.22)}
 @media(max-width:759px){.donate-btn{padding:7px 12px;font-size:12px}}
 
 /* ── 공역 페이지 상단 정적 소개(SEO/첫 방문자용) ── */
