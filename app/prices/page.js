@@ -9,9 +9,9 @@ import { krRuneText, runeLabel } from "../../lib/rune-names";
 const TIER_RANK = { S: 0, A: 1, B: 2, C: 3, D: 4, HR: 5 };
 
 
-const AUG = CATALOG.map((c) => ({ ...c, ...indexOf(c, { kr: c.kr, en: c.en }) }));
+const AUG = CATALOG.map((c) => ({ ...c, ...indexOf(c, { kr: c.kr, en: c.en, aka: c.aka }) }));
 // 기준선 표도 같은 인덱스를 쓴다 — 예전엔 검색할 때마다 norm/chosung 을 다시 계산했다.
-const AUG_BASE = BASELINE.map((b) => ({ ...b, ...indexOf(b, { kr: b.kr, en: b.en }) }));
+const AUG_BASE = BASELINE.map((b) => ({ ...b, ...indexOf(b, { kr: b.kr, en: b.en, aka: b.aka }) }));
 
 function fmtAgo(t) {
   const s = Math.max(0, Math.floor((Date.now() - t) / 1000));
@@ -181,7 +181,7 @@ export default function PricesPage() {
                   <span className="chk-sub" style={{ display: "inline" }}>{b.en}</span>
                   {b.tier && <span className="px-low"> · {b.tier}</span>}
                 </span>
-                {/* 좁은 표 칸이라 룬 이름은 한글만("≈Ohm~Lo (5~14 Ist)" → "≈옴~로 (5~14 이스트)").
+                {/* 좁은 표 칸이라 룬 이름은 한글만("≈Ohm~Lo (5~14 Ist)" → "≈오움~로 (5~14 이스트)").
                     같은 화면 아래 제보 룬 칩이 한글(영문) 병기를 보여주므로 영문 대조는 거기서 된다. */}
                 <span style={{ fontVariantNumeric: "tabular-nums" }}>{krRuneText(b.std, false)}</span>
                 <span style={{ fontVariantNumeric: "tabular-nums" }}>{krRuneText(b.ladder, false)}</span>
