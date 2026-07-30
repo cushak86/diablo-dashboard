@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { RUNES } from "../../lib/cube";
+import { runeLabel } from "../../lib/rune-names";
 import { RW } from "../../lib/runewords";
 import { STATUS, suggest, sanitizeStock } from "../../lib/rune-planner";
 
@@ -59,7 +60,7 @@ export default function RunePlanPage() {
           <div className="eyebrow blood">룬 선택 (역참조)</div>
           <p className="zen rp-hint">
             {sel ? (
-              <>선택: <b>{sel}</b> — 다시 누르면 해제하고 추천으로 돌아갑니다.</>
+              <>선택: <b>{runeLabel(sel)}</b> — 다시 누르면 해제하고 추천으로 돌아갑니다.</>
             ) : (
               <>보유한 룬은 강조됩니다. 룬을 눌러 그 룬을 쓰는 룬워드만 보세요.</>
             )}
@@ -76,7 +77,7 @@ export default function RunePlanPage() {
                   aria-pressed={sel === name}
                   onClick={() => setSel((s) => (s === name ? null : name))}
                 >
-                  {name}
+                  {runeLabel(name)}
                   {cnt > 0 && <b>{cnt}</b>}
                 </button>
               );
@@ -86,7 +87,7 @@ export default function RunePlanPage() {
 
         <div className="card">
           <div className="eyebrow gold">
-            {sel ? `‘${sel}’ 룬을 쓰는 룬워드` : "가까운 목표 추천"} · {visible.length}종
+            {sel ? `‘${runeLabel(sel)}’ 룬을 쓰는 룬워드` : "가까운 목표 추천"} · {visible.length}종
           </div>
 
           {!sel && total === 0 && (
@@ -123,7 +124,7 @@ export default function RunePlanPage() {
                       className={`rw-rune ${owned.has(rune) ? "have" : ""} ${sel === rune ? "on" : ""}`}
                       key={i}
                     >
-                      {rune}
+                      {runeLabel(rune)}
                     </span>
                   ))}
                 </div>
@@ -131,7 +132,7 @@ export default function RunePlanPage() {
                 {status === STATUS.SHORT && (
                   <div className="rw-meta">
                     {missing.map((m) => (
-                      <span key={m.rune} className="rp-mtag-short">{m.rune} {m.count}개 부족</span>
+                      <span key={m.rune} className="rp-mtag-short">{runeLabel(m.rune)} {m.count}개 부족</span>
                     ))}
                   </div>
                 )}

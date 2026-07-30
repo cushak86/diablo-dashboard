@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { ITEMS } from "../../lib/items";
+import { krRuneText } from "../../lib/rune-names";
 import { schedulePush } from "../../lib/sync";
 import { indexOf, matches } from "../../lib/item-search";
 import { UNIQUE_STATS } from "../../lib/unique-stats";
@@ -138,7 +139,9 @@ export default function NewItemsPage() {
                       복사
                     </span>
                   </div>
-                  <div className="ti-meta">{it.meta}</div>
+                  {/* meta 는 "룬워드 · Hel + Shael + Ral · 3소켓 갑옷" 형태다 — 룬 이름만 한글로 바꿔 보여준다.
+                      lib/items.js 값은 그대로 둔다(검색 색인·Traderie 링크가 영문 원문에 묶여 있다). */}
+                  <div className="ti-meta">{krRuneText(it.meta)}</div>
                 </div>
                 <div className="ti-links">
                   <button

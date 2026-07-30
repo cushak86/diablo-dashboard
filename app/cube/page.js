@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { RUNES, GEMS, needCount, combine } from "../../lib/cube";
+import { runeLabel } from "../../lib/rune-names";
 
 const nf = (n) => n.toLocaleString("en-US");
 
@@ -23,7 +24,7 @@ export default function CubePage() {
           <div className="eyebrow gold">호라드릭 큐브</div>
           <h1 className="zname">룬 업그레이드 레시피 · 룬 조합기</h1>
           <p className="zen">
-            낮은 룬을 <b>같은 룬 여러 개(+보석)</b>로 큐브에 돌려 상위 룬으로 업그레이드합니다. 엘~둔(Thul)까지는 같은 룬
+            낮은 룬을 <b>같은 룬 여러 개(+보석)</b>로 큐브에 돌려 상위 룬으로 업그레이드합니다. 엘~툴(Thul)까지는 같은 룬
             3개, <b>움(Um)부터</b>는 2개 + 지정 보석이 필요합니다. 룬워드용 고급 룬 파밍의 핵심 도구입니다.
           </p>
         </div>
@@ -40,7 +41,7 @@ export default function CubePage() {
                   className={`cube-pill ${i === targetIdx ? "on" : ""}`}
                   onClick={() => onTarget(i)}
                 >
-                  {name}
+                  {runeLabel(name)}
                 </button>
               )
             )}
@@ -54,7 +55,7 @@ export default function CubePage() {
                   className={`cube-pill alt ${i === sourceIdx ? "on" : ""}`}
                   onClick={() => setSourceIdx(i)}
                 >
-                  {name}
+                  {runeLabel(name)}
                 </button>
               )
             )}
@@ -64,9 +65,9 @@ export default function CubePage() {
             <div className="cube-result">
               <div className="cube-result-line">
                 <span className="cube-big">{nf(result.runeCount)}</span>
-                <span className="cube-rune">{RUNES[sourceIdx][0]}</span>
+                <span className="cube-rune">{runeLabel(RUNES[sourceIdx][0])}</span>
                 <span className="cube-arrow">→</span>
-                <span className="cube-rune cube-rune-hi">{RUNES[targetIdx][0]}</span>
+                <span className="cube-rune cube-rune-hi">{runeLabel(RUNES[targetIdx][0])}</span>
                 <span className="cube-x1">×1</span>
               </div>
               {result.gems.length > 0 && (
@@ -86,7 +87,8 @@ export default function CubePage() {
                 </div>
               )}
               <div className="cube-note">
-                {RUNES[targetIdx][0]} 요구 레벨 {RUNES[targetIdx][1]} · 위 수량은 {RUNES[sourceIdx][0]}만 모아 큐브를
+                {runeLabel(RUNES[targetIdx][0])} 요구 레벨 {RUNES[targetIdx][1]} · 위 수량은{" "}
+                {runeLabel(RUNES[sourceIdx][0])}만 모아 큐브를
                 반복 업그레이드했을 때의 총 소모량입니다.
               </div>
             </div>
@@ -109,11 +111,11 @@ export default function CubePage() {
                 {RUNES.map(([name, lvl], i) =>
                   i === 0 ? null : (
                     <tr key={name}>
-                      <td className="cube-td-rune">{name}</td>
+                      <td className="cube-td-rune">{runeLabel(name)}</td>
                       <td className="cube-td-lvl">{lvl}</td>
                       <td>
                         <span className="cube-mat">
-                          {RUNES[i - 1][0]} ×{needCount(i)}
+                          {runeLabel(RUNES[i - 1][0])} ×{needCount(i)}
                         </span>
                         {GEMS[i] && <span className="cube-mat cube-mat-gem">+ {GEMS[i]}</span>}
                       </td>
@@ -166,7 +168,7 @@ export default function CubePage() {
           <b>파밍 팁</b> — 룬워드용 고급 룬(움~조드)은 드롭이 극히 드물어 <b>저급 룬 업그레이드</b>가 현실적입니다.
           카운테스(액트1 망각의 탑)·헬포지 퀘스트·공포의 영역(TZ) 런으로 저급 룬과 보석을 대량 확보한 뒤 큐브로 압축하세요.
           <br />
-          <b>규칙 요약</b> — 엘→둔(Thul)까지는 같은 룬 3개. <b>아문(Amn)부터 보석 추가</b>. <b>움(Um)부터</b>는 2개 + 보석.
+          <b>규칙 요약</b> — 엘→툴(Thul)까지는 같은 룬 3개. <b>암(Amn)부터 보석 추가</b>. <b>움(Um)부터</b>는 2개 + 보석.
           보석 등급은 6단계마다 상승(조각난→흠집난→일반→완벽에 가까운).
           <br />
           <b>출처</b> — 큐브 레시피는 D2R 3.2 인게임 기준(diablo2.io·maxroll·d2r.world 교차 검증).

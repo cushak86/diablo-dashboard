@@ -4,6 +4,7 @@ import { useMemo, useState, useEffect, useRef } from "react";
 import { CATALOG, RUNE_UNITS } from "../../lib/price-catalog";
 import { getBaseline, BASELINE, AS_OF, STALE_MONTHS, monthsSinceAsOf } from "../../lib/price-baseline";
 import { indexOf, matches } from "../../lib/item-search";
+import { krRuneText, runeLabel } from "../../lib/rune-names";
 
 const TIER_RANK = { S: 0, A: 1, B: 2, C: 3, D: 4, HR: 5 };
 
@@ -180,8 +181,10 @@ export default function PricesPage() {
                   <span className="chk-sub" style={{ display: "inline" }}>{b.en}</span>
                   {b.tier && <span className="px-low"> · {b.tier}</span>}
                 </span>
-                <span style={{ fontVariantNumeric: "tabular-nums" }}>{b.std}</span>
-                <span style={{ fontVariantNumeric: "tabular-nums" }}>{b.ladder}</span>
+                {/* 좁은 표 칸이라 룬 이름은 한글만("≈Ohm~Lo (5~14 Ist)" → "≈옴~로 (5~14 이스트)").
+                    같은 화면 아래 제보 룬 칩이 한글(영문) 병기를 보여주므로 영문 대조는 거기서 된다. */}
+                <span style={{ fontVariantNumeric: "tabular-nums" }}>{krRuneText(b.std, false)}</span>
+                <span style={{ fontVariantNumeric: "tabular-nums" }}>{krRuneText(b.ladder, false)}</span>
               </button>
             ))}
             {baseHits.length === 0 && (
@@ -210,16 +213,16 @@ export default function PricesPage() {
                 <div className="px-unit-grid">
                   <div className="px-unit">
                     <div className="px-unit-name">스탠다드</div>
-                    <div className="px-unit-med">{baseline.std}</div>
+                    <div className="px-unit-med">{krRuneText(baseline.std, false)}</div>
                     <div className="px-unit-cnt">비-래더</div>
                   </div>
                   <div className="px-unit">
                     <div className="px-unit-name">래더 시즌 초</div>
-                    <div className="px-unit-med">{baseline.ladder}</div>
+                    <div className="px-unit-med">{krRuneText(baseline.ladder, false)}</div>
                     <div className="px-unit-cnt">ladder start</div>
                   </div>
                 </div>
-                {baseline.note && <div className="px-msg">{baseline.note}</div>}
+                {baseline.note && <div className="px-msg">{krRuneText(baseline.note)}</div>}
               </div>
             )}
 
@@ -233,7 +236,7 @@ export default function PricesPage() {
               <div className="px-unit-grid">
                 {data.units.map((u) => (
                   <div className="px-unit" key={u.unit}>
-                    <div className="px-unit-name">{u.unit}</div>
+                    <div className="px-unit-name">{runeLabel(u.unit)}</div>
                     <div className="px-unit-med">{u.median}</div>
                     <div className="px-unit-cnt">
                       {u.count < 3 ? <span className="px-low">표본 부족 ({u.count})</span> : `${u.count}건`}
@@ -255,7 +258,7 @@ export default function PricesPage() {
                     className={`ti-chip ${unit === u ? "on" : ""}`}
                     onClick={() => setUnit(u)}
                   >
-                    {u}
+                    {runeLabel(u)}
                   </div>
                 ))}
               </div>
@@ -267,7 +270,7 @@ export default function PricesPage() {
                 min="0"
                 max="9999"
                 step="0.5"
-                placeholder={`가격 (예: 2 = ${unit || "룬"} 2개)`}
+                placeholder={`가격 (예: 2 = ${unit ? runeLabel(unit) : "룬"} 2개)`}
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
               />
@@ -301,7 +304,7 @@ export default function PricesPage() {
                 <div className="ti-sublbl">최근 제보</div>
                 {data.recent.map((r, i) => (
                   <div className="px-rec" key={i}>
-                    <span className="px-rec-price">{r.price} {r.unit}</span>
+                    <span className="px-rec-price">{r.price} {runeLabel(r.unit)}</span>
                     {r.note && <span className="px-rec-note">{r.note}</span>}
                     <span className="px-rec-t">{fmtAgo(r.t)}</span>
                   </div>

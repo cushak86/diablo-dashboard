@@ -2,6 +2,7 @@
 
 import { useMemo, useState, useEffect } from "react";
 import { runewordCubeCost } from "../../lib/cube";
+import { runeLabel } from "../../lib/rune-names";
 import { RW } from "../../lib/runewords";
 import { schedulePush } from "../../lib/sync";
 import { indexOf, matches } from "../../lib/item-search";
@@ -165,7 +166,7 @@ export default function RunewordsPage() {
               </div>
               <div className="rw-runes">
                 {r.runes.map((rune, i) => (
-                  <span className="rw-rune" key={i}>{rune}</span>
+                  <span className="rw-rune" key={i}>{runeLabel(rune)}</span>
                 ))}
                 <button
                   type="button"
@@ -219,7 +220,7 @@ export default function RunewordsPage() {
             <div className="rw-tip-base">{openRW.base} · {openRW.sockets}소켓</div>
             <div className="rw-tip-runes">
               {openRW.runes.map((rune, i) => (
-                <span className="rw-rune" key={i}>{rune}</span>
+                <span className="rw-rune" key={i}>{runeLabel(rune)}</span>
               ))}
               <button type="button" className="rw-copy" onClick={() => copy(openRW.runes.join(""))}>복사</button>
             </div>
@@ -229,7 +230,7 @@ export default function RunewordsPage() {
               <div className="rw-tip-cube">
                 <div className="rw-tip-cube-hd">큐브 파밍 난이도</div>
                 <div className="rw-tip-cube-line">
-                  최고 룬 <span className="rw-rune">{cubeCost.highest}</span> · {cubeCost.fromRune}{" "}
+                  최고 룬 <span className="rw-rune">{runeLabel(cubeCost.highest)}</span> · {runeLabel(cubeCost.fromRune)}{" "}
                   <b>{cubeCost.runeCount.toLocaleString("en-US")}</b>개로 조합
                   {cubeCost.gems.length > 0 && (
                     <span className="rw-tip-cube-dim">

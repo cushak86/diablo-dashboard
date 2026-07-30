@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { RUNES } from "../../lib/cube";
+import { runeLabel } from "../../lib/rune-names";
 import { RW } from "../../lib/runewords";
 import { STATUS, planRuneword, sanitizeStock } from "../../lib/rune-planner";
 import { schedulePush } from "../../lib/sync";
@@ -78,7 +79,8 @@ export default function PlannerPage() {
           </p>
           <p className="zen rp-warn">
             ⚠ <b>각 룬워드는 단독 기준</b>입니다 — “이것 하나만 만든다면 가능한가”. 여러 개를 동시에 만들 수 있다는
-            뜻이 아닙니다. (예: Ber 2개로 Infinity와 Last Wish가 각각 “즉시 제작”이어도, 둘 다 만들려면 Ber 3개가 필요합니다.)
+            뜻이 아닙니다. (예: 베르(Ber) 2개로 무한(Infinity)과 마지막 소원(Last Wish)이 각각 “즉시 제작”이어도, 둘 다
+            만들려면 베르 3개가 필요합니다.)
           </p>
         </div>
 
@@ -90,16 +92,18 @@ export default function PlannerPage() {
           <div className="rp-grid" role="group" aria-label="룬 재고 입력">
             {RUNES.map(([name], i) => {
               const v = stock[name] || 0;
+              // 표시는 한글(영문) 병기, 저장 키(stock·setCount)는 영문 name 그대로 — 기존 재고를 깨지 않는다.
+              const label = runeLabel(name);
               return (
                 <div key={name} className={`rp-cell ${v > 0 ? "on" : ""}`}>
                   <button
                     type="button"
                     className="rp-fill"
                     onClick={() => setCount(name, v + 1)}
-                    aria-label={v > 0 ? `${name} 보유 ${v}개, 누르면 1개 추가` : `${name} 추가`}
+                    aria-label={v > 0 ? `${label} 보유 ${v}개, 누르면 1개 추가` : `${label} 추가`}
                   >
                     <span className="rp-cell-name">
-                      <span className="rp-idx">{i + 1}</span> {name}
+                      <span className="rp-idx">{i + 1}</span> {label}
                     </span>
                     {v > 0 && <span className="rp-badge">{v}</span>}
                   </button>
@@ -109,7 +113,7 @@ export default function PlannerPage() {
                         type="button"
                         className="rp-btn"
                         onClick={(e) => { e.stopPropagation(); setCount(name, v - 1); }}
-                        aria-label={`${name} 1개 제거`}
+                        aria-label={`${label} 1개 제거`}
                       >−</button>
                       <input
                         className="rp-num"
@@ -118,7 +122,7 @@ export default function PlannerPage() {
                         max={MAX}
                         value={v}
                         onChange={(e) => setCount(name, parseInt(e.target.value, 10))}
-                        aria-label={`${name} 개수 직접 입력`}
+                        aria-label={`${label} 개수 직접 입력`}
                       />
                     </div>
                   )}
@@ -179,14 +183,14 @@ export default function PlannerPage() {
 
                 <div className="rw-runes">
                   {rw.runes.map((rune, i) => (
-                    <span className="rw-rune" key={i}>{rune}</span>
+                    <span className="rw-rune" key={i}>{runeLabel(rune)}</span>
                   ))}
                 </div>
 
                 {status === STATUS.SHORT && (
                   <div className="rw-meta">
                     {missing.map((m) => (
-                      <span key={m.rune} className="rp-mtag-short">{m.rune} {m.count}개 부족</span>
+                      <span key={m.rune} className="rp-mtag-short">{runeLabel(m.rune)} {m.count}개 부족</span>
                     ))}
                   </div>
                 )}
@@ -194,7 +198,7 @@ export default function PlannerPage() {
                 {status === STATUS.CUBABLE && (
                   <div className="rw-meta">
                     <span className="rw-mtag">
-                      소비: {Object.entries(consumed).map(([n, c]) => `${n}×${c}`).join(" · ")}
+                      소비: {Object.entries(consumed).map(([n, c]) => `${runeLabel(n)}×${c}`).join(" · ")}
                     </span>
                     {Object.entries(gems).map(([name, c]) => (
                       <span key={name} className="rp-mtag-gem">{name} {c}개</span>
