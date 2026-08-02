@@ -1,3 +1,5 @@
+import PageSchema from "../components/PageSchema";
+
 export const metadata = {
   title: "신규 아이템 · 트레더리(Traderie) 한→영 검색",
   description:
@@ -12,5 +14,10 @@ export const metadata = {
 };
 
 export default function NewItemsLayout({ children }) {
-  return children;
+  return (
+    <>
+      <PageSchema path="/new-items" />
+      {children}
+    </>
+  );
 }

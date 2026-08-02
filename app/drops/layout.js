@@ -1,3 +1,5 @@
+import PageSchema from "../components/PageSchema";
+
 export const metadata = {
   title: "D2R 드롭 위치 — 이 아이템 어디서 나오나 (한글 검색)",
   description:
@@ -12,5 +14,10 @@ export const metadata = {
 };
 
 export default function DropsLayout({ children }) {
-  return children;
+  return (
+    <>
+      <PageSchema path="/drops" />
+      {children}
+    </>
+  );
 }

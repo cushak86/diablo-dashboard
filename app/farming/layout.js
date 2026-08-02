@@ -1,3 +1,5 @@
+import PageSchema from "../components/PageSchema";
+
 // :145-146 일일=매일 자정(KST) 초기화 / 주간=매주 월요일(KST) 초기화.
 export const metadata = {
   title: "일일 · 주간 파밍 체크리스트 · KST 자동 초기화",
@@ -13,5 +15,10 @@ export const metadata = {
 };
 
 export default function FarmingLayout({ children }) {
-  return children;
+  return (
+    <>
+      <PageSchema path="/farming" />
+      {children}
+    </>
+  );
 }

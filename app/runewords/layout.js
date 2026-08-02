@@ -1,3 +1,5 @@
+import PageSchema from "../components/PageSchema";
+
 export const metadata = {
   title: "룬워드 조합 · 룬 순서/소켓/베이스 (신규 3.x 포함)",
   description:
@@ -12,5 +14,10 @@ export const metadata = {
 };
 
 export default function RunewordsLayout({ children }) {
-  return children;
+  return (
+    <>
+      <PageSchema path="/runewords" />
+      {children}
+    </>
+  );
 }

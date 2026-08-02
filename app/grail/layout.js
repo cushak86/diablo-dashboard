@@ -1,3 +1,5 @@
+import PageSchema from "../components/PageSchema";
+
 export const metadata = {
   title: "악마술사의 군림 수집 트래커 · 신규 고유/세트 · 33룬 · 룬워드",
   description:
@@ -12,5 +14,10 @@ export const metadata = {
 };
 
 export default function GrailLayout({ children }) {
-  return children;
+  return (
+    <>
+      <PageSchema path="/grail" />
+      {children}
+    </>
+  );
 }

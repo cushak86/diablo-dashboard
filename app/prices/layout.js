@@ -1,3 +1,5 @@
+import PageSchema from "../components/PageSchema";
+
 export const metadata = {
   title: "아이템 시세 지수 · 익명 제보 (룬워드 · 고유 · 룬)",
   description:
@@ -12,5 +14,10 @@ export const metadata = {
 };
 
 export default function PricesLayout({ children }) {
-  return children;
+  return (
+    <>
+      <PageSchema path="/prices" />
+      {children}
+    </>
+  );
 }

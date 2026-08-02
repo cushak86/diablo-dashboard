@@ -1,3 +1,5 @@
+import PageSchema from "../components/PageSchema";
+
 export const metadata = {
   title: "룬 재고 시뮬레이터 · 내 룬으로 만들 수 있는 룬워드",
   description:
@@ -11,5 +13,10 @@ export const metadata = {
 };
 
 export default function PlannerLayout({ children }) {
-  return children;
+  return (
+    <>
+      <PageSchema path="/planner" />
+      {children}
+    </>
+  );
 }

@@ -1,3 +1,5 @@
+import PageSchema from "../components/PageSchema";
+
 export const metadata = {
   title: "직업별 추천 빌드 가이드 (8직업 · 악마술사 포함)",
   description:
@@ -12,5 +14,10 @@ export const metadata = {
 };
 
 export default function BuildLayout({ children }) {
-  return children;
+  return (
+    <>
+      <PageSchema path="/build" />
+      {children}
+    </>
+  );
 }

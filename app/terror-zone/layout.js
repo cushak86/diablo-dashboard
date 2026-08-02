@@ -1,3 +1,5 @@
+import PageSchema from "../components/PageSchema";
+
 export const metadata = {
   title: "공포의 영역 시간표 · 테러존 추적기",
   description:
@@ -16,6 +18,7 @@ export default function TerrorZoneLayout({ children }) {
   // 클라이언트 대시보드(page.js)는 마운트 후 아래에서 실시간 데이터를 그린다.
   return (
     <>
+      <PageSchema path="/terror-zone" />
       <section className="seo-intro" aria-label="페이지 소개">
         <div className="wrap">
           <h1 className="seo-h1">디아블로2 레저렉션 공포의 영역(테러존) 실시간 추적기</h1>

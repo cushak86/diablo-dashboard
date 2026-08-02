@@ -1,3 +1,5 @@
+import PageSchema from "../components/PageSchema";
+
 export const metadata = {
   title: "프레임 기준 · FCR/FHR 브레이크포인트 (전 직업)",
   description:
@@ -12,5 +14,10 @@ export const metadata = {
 };
 
 export default function BreakpointsLayout({ children }) {
-  return children;
+  return (
+    <>
+      <PageSchema path="/breakpoints" />
+      {children}
+    </>
+  );
 }

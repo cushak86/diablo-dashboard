@@ -1,3 +1,5 @@
+import PageSchema from "../components/PageSchema";
+
 export const metadata = {
   title: "호라드릭 큐브 · 룬 업그레이드 레시피 & 룬 조합기",
   description:
@@ -12,5 +14,10 @@ export const metadata = {
 };
 
 export default function CubeLayout({ children }) {
-  return children;
+  return (
+    <>
+      <PageSchema path="/cube" />
+      {children}
+    </>
+  );
 }

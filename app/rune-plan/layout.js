@@ -1,3 +1,5 @@
+import PageSchema from "../components/PageSchema";
+
 export const metadata = {
   title: "룬 추천 · 내 룬으로 완성에 가까운 룬워드",
   description:
@@ -11,5 +13,10 @@ export const metadata = {
 };
 
 export default function RunePlanLayout({ children }) {
-  return children;
+  return (
+    <>
+      <PageSchema path="/rune-plan" />
+      {children}
+    </>
+  );
 }
