@@ -1,4 +1,5 @@
 import "./globals.css";
+import Link from "next/link";
 import TabNav from "./components/TabNav";
 import DonationButton from "./components/DonationButton";
 import PageTracker from "./components/PageTracker";
@@ -53,6 +54,19 @@ export default function RootLayout({ children }) {
         </header>
         <SyncBootstrap />
         {children}
+        {/* 전역 푸터 — 소개·정책·연락처는 **모든 페이지에서 한 번에 닿아야** 한다.
+            탭 내비게이션은 이미 13개라 여기에 더 넣으면 도구 탭이 묻힌다. globals.css:81의
+            footer 스타일이 원래 있었는데 정작 <footer> 요소가 없었다(2026-08-05 확인). */}
+        <footer>
+          <Link href="/about" style={{ color: "#8a8a8a" }}>사이트 소개</Link>
+          {" · "}
+          <Link href="/privacy" style={{ color: "#8a8a8a" }}>개인정보처리방침</Link>
+          {" · "}
+          <a href="mailto:cushak@icloud.com" style={{ color: "#8a8a8a" }}>문의</a>
+          <div style={{ marginTop: 6, fontSize: 11, color: "#4a4a4a" }}>
+            비공식 팬 사이트 · Diablo II: Resurrected는 Blizzard Entertainment, Inc.의 상표입니다.
+          </div>
+        </footer>
         <PageTracker />
       </body>
     </html>
