@@ -12,7 +12,7 @@ export const metadata = {
     "디아블로2 레저렉션(D2R) 공포의 영역(테러존)을 실시간으로 추적합니다. 현재 지역과 다음 지역, 정각까지 남은 시간(카운트다운), 음성·사운드 알림, 우버 디아블로(클론 디아) 진행도를 함께 확인하세요.",
   alternates: { canonical: "/terror-zone" },
   openGraph: {
-    url: "https://diablo-dashboard-phi.vercel.app/terror-zone",
+    url: "/terror-zone",
     title: "공포의 영역 시간표 · 테러존 추적기 | D2R 대시보드",
     description:
       "디아블로2 레저렉션 실시간 공포의 영역 추적 · 현재/다음 지역 · 정각 카운트다운 · 음성 알림 · 우버 디아 진행도.",

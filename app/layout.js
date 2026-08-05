@@ -1,12 +1,15 @@
 import "./globals.css";
 import Link from "next/link";
+import { BASE } from "../lib/site-pages";
 import TabNav from "./components/TabNav";
 import DonationButton from "./components/DonationButton";
 import PageTracker from "./components/PageTracker";
 import SyncBootstrap from "./components/SyncBootstrap";
 
 export const metadata = {
-  metadataBase: new URL("https://diablo-dashboard-phi.vercel.app"),
+  // 사이트 주소 정본은 lib/site-pages.js 의 BASE 하나다 — 커스텀 도메인으로 옮길 때 그 한 줄만 고치면
+  // 사이트맵·llms.txt·JSON-LD·robots·전 페이지 openGraph 가 함께 따라온다(각 layout 의 og:url 은 상대 경로).
+  metadataBase: new URL(BASE),
   title: {
     default: "D2R 대시보드 | 공포의 영역 시간표 · 테러존 추적기",
     template: "%s | D2R 대시보드",
@@ -22,7 +25,7 @@ export const metadata = {
     type: "website",
     siteName: "D2R 대시보드",
     locale: "ko_KR",
-    url: "https://diablo-dashboard-phi.vercel.app/terror-zone",
+    url: "/terror-zone",
     title: "D2R 대시보드 | 공포의 영역 시간표 · 테러존 추적기",
     description:
       "디아블로2 레저렉션 실시간 공포의 영역(테러존) 추적 · 정각 카운트다운 · 음성 알림 · 우버 디아 진행도.",

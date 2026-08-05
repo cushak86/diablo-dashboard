@@ -19,7 +19,7 @@ export const metadata = {
     "D2R 대시보드는 디아블로2 레저렉션 플레이에 필요한 도구를 한국어로 모은 비공식 팬 사이트입니다. 운영자, 데이터 출처와 한계, 연락 방법을 안내합니다.",
   alternates: { canonical: "/about" },
   openGraph: {
-    url: "https://diablo-dashboard-phi.vercel.app/about",
+    url: "/about",
     title: "사이트 소개 · 연락처 | D2R 대시보드",
     description: "운영자·데이터 출처·연락 방법 안내. 비공식 팬 사이트입니다.",
   },

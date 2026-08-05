@@ -3,7 +3,7 @@ import PageGuide from "./components/PageGuide";
 import { RW } from "../lib/runewords";
 import { RUNES } from "../lib/cube";
 import { TERROR_ZONES } from "../lib/zones";
-import { SITE_PAGES } from "../lib/site-pages";
+import { BASE, SITE_PAGES } from "../lib/site-pages";
 
 // 루트(/)는 실제 랜딩 페이지다(2026-07-18 사장님 확정). 이전엔 /terror-zone으로 리다이렉트했으나,
 // 홈이 자체 색인·랭킹되고 전 탭으로 가는 내부 링크 허브가 되도록 실물 페이지로 전환했다.
@@ -46,7 +46,7 @@ const LD = {
   "@type": "WebSite",
   name: "디아블로2 레저렉션 통합 대시보드",
   alternateName: "D2R 대시보드",
-  url: "https://diablo-dashboard-phi.vercel.app/",
+  url: `${BASE}/`,
   description:
     "디아블로2 레저렉션(D2R) 올인원 대시보드 — 공포의 영역 시간표, 빌드 가이드, 룬워드·홀리그레일·신규 아이템, 파밍·드롭 위치, 프레임 기준, 큐브, 룬 재고.",
   inLanguage: "ko",

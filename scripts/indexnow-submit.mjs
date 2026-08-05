@@ -4,7 +4,8 @@
 //
 // 키 파일이 라이브에 200으로 서빙된 뒤에만 제출이 검증된다(배포 선행 필수).
 
-const BASE = "https://diablo-dashboard-phi.vercel.app";
+// 사이트 주소 정본은 lib/site-pages.js 다 — 도메인 전환 시 여기만 따로 남지 않게 거기서 가져온다.
+const { BASE } = await import("../lib/site-pages.js");
 const KEY = "bb9aac3c09324870990c4392d2a1bca1";
 const KEY_LOCATION = `${BASE}/${KEY}.txt`;
 const ENDPOINT = "https://api.indexnow.org/IndexNow";
