@@ -1,6 +1,6 @@
 # docs — 블로그 홍보 자료
 
-D2R 대시보드(https://diablo-dashboard-phi.vercel.app) 소개 글 원고와 스크린샷 모음.
+D2R 대시보드(https://d2r-dashboard.online) 소개 글 원고와 스크린샷 모음.
 
 ## 폴더 구성
 
@@ -27,7 +27,7 @@ docs/
 2. `post.html`의 `<div class="d2r-post">` ~ `</div>` 전체를 붙여넣기
 3. 미리보기 확인 후 발행
 
-- 이미지는 `https://diablo-dashboard-phi.vercel.app/blog/*.png` 로 **사이트에 호스팅돼 있어
+- 이미지는 `https://d2r-dashboard.online/blog/*.png` 로 **사이트에 호스팅돼 있어
   별도 업로드 없이 바로 표시**됩니다.
 - 워드프레스 미디어 라이브러리에 직접 올리고 싶으면 `images/`의 PNG를 업로드 후 `src`만 교체.
 

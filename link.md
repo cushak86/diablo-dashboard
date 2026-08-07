@@ -9,7 +9,7 @@
 
 | 항목 | 값 |
 |---|---|
-| **공개 URL (임시)** | https://diablo-dashboard-phi.vercel.app |
+| **공개 URL** | https://d2r-dashboard.online (2026-08-07 전환 · 옛 `diablo-dashboard-phi.vercel.app`은 308) |
 | Vercel 프로젝트 | `cushaks/diablo-dashboard` |
 | 팀 scope / 계정 | `cushaks` / `suhunlee59-9142` |
 | 플랜 | Hobby (무료, 월 $0) |
@@ -130,15 +130,23 @@ vercel env ls           # 등록 목록 확인
 
 ---
 
-## 6. 별도 도메인 연결 (나중에)
+## 6. 커스텀 도메인 연결 — **완료 (2026-08-07)**
 
-1. Vercel 대시보드 → 프로젝트 `diablo-dashboard` → **Settings → Domains** → 도메인 추가
-2. Vercel이 알려주는 값을 도메인 DNS에 등록:
-   - 서브도메인(예: `cushaks.mycafe24.com`) → **CNAME** 레코드
-   - 루트 도메인(예: `example.com`) → **A** 레코드
-   - 카페24 도메인은 카페24 DNS 관리에서 지정. 새 도메인 구입해도 방식 동일.
-3. Vercel 무료 플랜에서 커스텀 도메인 연결·SSL은 **추가 비용 없음**.
-   (도메인 자체 구입비만 등록업체에 연 1만원대 발생)
+`d2r-dashboard.online` (Hostinger 구입) 연결. 절차·근거는 `docs/plans/2026-08-05-커스텀도메인-전환-절차.md`,
+실행 기록은 `work/domain-connect/log.md`.
+
+| 항목 | 값 |
+|---|---|
+| 정식 호스트 | `d2r-dashboard.online` (apex) |
+| `www` | 308 → apex |
+| 옛 `diablo-dashboard-phi.vercel.app` | 308 → apex (`next.config.mjs` 호스트 조건 리다이렉트) |
+| 네임서버 | Hostinger 유지 (`nova/cosmos.dns-parking.com`) — Vercel NS로 안 바꿨다 |
+| apex A | `216.198.79.1`, `64.29.17.1` |
+| `www` CNAME | `d81b4231902b2ae3.vercel-dns-017.com` |
+
+- Vercel 무료(Hobby) 플랜에서 커스텀 도메인 연결·SSL은 **추가 비용 없음**(프로젝트당 50개 한도).
+- ⚠️ **순서**: 도메인이 Vercel에 붙고 SSL이 뜬 **뒤에** 배포할 것. 먼저 배포하면 `next.config.mjs`의
+  308이 라이브 트래픽을 아직 파킹 상태인 도메인으로 보내 사이트가 죽는다.
 
 ---
 
@@ -154,6 +162,6 @@ vercel env ls           # 등록 목록 확인
 
 ## 참고 링크
 
-- 프로덕션: https://diablo-dashboard-phi.vercel.app
+- 프로덕션: https://d2r-dashboard.online
 - Vercel 대시보드: https://vercel.com/cushaks/diablo-dashboard
 - Vercel Fair Use: https://vercel.com/docs/limits/fair-use-guidelines
