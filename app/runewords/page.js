@@ -185,7 +185,34 @@ export default function RunewordsPage() {
                 <span className="rw-mtag">Lv {r.clvl}</span>
               </div>
               <div className="rw-stat">{r.stat}</div>
-              <div className="rw-more">전체 옵션 보기 ▸</div>
+              {/*
+                전체 옵션을 **서버 렌더 HTML 안에** 둔다. 2026-08-09 이전에는 모달(ItemTip)에만 있었고
+                ItemTip 은 `if (!open) return null` 이라, 룬워드 99개의 옵션이 프리렌더 HTML 에
+                한 줄도 실리지 않았다. 크롤러에게 이 페이지는 한 줄 요약(r.stat)만 있는 목록이었다.
+                네이티브 <details> 라 JS 0줄이고, 접힌 상태여도 내용은 HTML 에 존재한다.
+                모달은 그대로 둔다 — 넓은 화면에서 더 편하다.
+
+                ⚠️ stopPropagation 필수: 이 카드가 role="button" + onClick(모달 열기) 래퍼라
+                   summary 클릭이 모달까지 함께 연다(rw-fav·rw-copy 가 같은 이유로 이미 쓰고 있다).
+                   키보드 조작도 같은 이유로 막는다 — Enter/Space 가 카드 핸들러로 올라가면
+                   details 가 열리는 동시에 모달이 뜬다.
+              */}
+              {r.stats?.length > 0 && (
+                <details className="rw-details">
+                  <summary
+                    onClick={(e) => e.stopPropagation()}
+                    onKeyDown={(e) => e.stopPropagation()}
+                  >
+                    전체 옵션 {r.stats.length}개
+                  </summary>
+                  <ul className="rw-details-list">
+                    {r.stats.map((s, i) => (
+                      <li key={i}>{s}</li>
+                    ))}
+                  </ul>
+                </details>
+              )}
+              <div className="rw-more">큰 화면으로 보기 ▸</div>
             </div>
           ))}
         </div>

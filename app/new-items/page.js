@@ -142,6 +142,24 @@ export default function NewItemsPage() {
                   {/* meta 는 "룬워드 · Hel + Shael + Ral · 3소켓 갑옷" 형태다 — 룬 이름만 한글로 바꿔 보여준다.
                       lib/items.js 값은 그대로 둔다(검색 색인·Traderie 링크가 영문 원문에 묶여 있다). */}
                   <div className="ti-meta">{krRuneText(it.meta)}</div>
+                  {/*
+                    옵션을 서버 렌더 HTML 안에 둔다. 2026-08-09 이전에는 모달(ItemTip)에만 있었고
+                    ItemTip 은 `if (!open) return null` 이라 옵션이 프리렌더 HTML 에 한 줄도
+                    실리지 않았다 — 크롤러에게 이 페이지는 이름 목록일 뿐이었다.
+                    네이티브 <details> 라 JS 0줄이고, 접혀 있어도 내용은 HTML 에 존재한다.
+                    이 카드는 role="button" 래퍼가 아니라서(옵션 버튼이 따로 있다)
+                    /runewords 와 달리 stopPropagation 이 필요 없다.
+                  */}
+                  {statsOf(it)?.length > 0 && (
+                    <details className="ti-details">
+                      <summary>전체 옵션 {statsOf(it).length}개</summary>
+                      <ul className="ti-details-list">
+                        {statsOf(it).map((s, i) => (
+                          <li key={i}>{s}</li>
+                        ))}
+                      </ul>
+                    </details>
+                  )}
                 </div>
                 <div className="ti-links">
                   <button
