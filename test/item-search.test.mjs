@@ -106,3 +106,44 @@ t("배열·누락 필드를 방어한다", () => {
 });
 
 console.log(`\n[item-search] ${pass}개 통과\n`);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 탭 간 이름 정합 (2026-08-09 추가)
+//
+// 왜: 같은 룬워드 Hysteria 를 lib/runewords.js 는 "발작", lib/items.js 는 "히스테리아"로
+// 부르고 있었다. 두 파일이 별도 정본이라 조용히 갈라진 것이다. 결과:
+//   /runewords 에서 "발작" 2회 · "히스테리아" 0회 / /new-items 는 정반대.
+// /new-items 는 "한글명·초성·영문명 모두 검색 가능"이라고 안내하는데 그 페이지 데이터에
+// "발작"이 0회라 매칭될 수 없었다 — 한쪽 이름만 아는 사람은 그 탭에서 아이템을 못 찾는다.
+//
+// 이름을 하나로 합치는 것은 3.x 한글명이 확정된 뒤에 할 일이라(runewords.js 가 "비공식·검증 필요"로
+// 표시 중), 지금은 **양쪽에서 둘 다 찾히는지**를 기계가 지킨다.
+import { ITEMS } from "../lib/items.js";
+import { RW } from "../lib/runewords.js";
+
+const asList = (v) => (Array.isArray(v) ? v : v ? [v] : []);
+
+t("탭 간 이름 정합 — 같은 en 을 두 파일이 다르게 부르면 서로의 이름으로도 검색돼야 한다", () => {
+  const byEn = new Map(ITEMS.map((it) => [it.en, it]));
+  const broken = [];
+
+  for (const r of RW) {
+    const it = byEn.get(r.en);
+    if (!it) continue; // 한쪽에만 있는 항목은 갈라질 여지가 없다
+
+    const rwNames = [r.kr, ...asList(r.aka)].map(norm);
+    const itNames = [it.kr, ...asList(it.alias)].map(norm);
+
+    // 상대 파일의 대표 이름으로 이 항목을 찾을 수 있어야 한다(양방향).
+    const itIdx = indexOf(it, { kr: it.kr, en: it.en, aka: it.alias });
+    const rwIdx = indexOf(r, { kr: r.kr, en: r.en, aka: r.aka, extra: r.runes.join("") });
+
+    if (!matches(itIdx, r.kr)) broken.push(`${r.en}: items.js 에서 "${r.kr}"(runewords 표기)로 못 찾는다`);
+    if (!matches(rwIdx, it.kr)) broken.push(`${r.en}: runewords.js 에서 "${it.kr}"(items 표기)로 못 찾는다`);
+
+    void rwNames;
+    void itNames;
+  }
+
+  assert.deepEqual(broken, [], `\n       ${broken.join("\n       ")}\n       고치는 법: 양쪽 alias/aka 에 상대 표기를 추가한다.`);
+});

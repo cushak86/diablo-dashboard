@@ -208,12 +208,14 @@ footer{text-align:center;color:#8a8a8a;font-size:12px;padding:10px 0 30px}
 @media(max-width:759px){.seo-h1{font-size:14px}}
 
 /* ── 공역 최초 로딩 스켈레톤 (모의→실시간 깜빡임 방지) ── */
-/* 로딩 중 완성 레이아웃의 높이를 미리 잡는다. 값은 실측이다(2026-08-09, 라이브):
-     412px 폭 → main 2138px · 1280px 폭 → main 1284px
-   근사값이라 잔여 시프트가 조금 남지만, 예약이 없을 때의 1822px 점프와는 비교가 안 된다.
-   레이아웃을 크게 바꾸면 이 값도 다시 재야 한다 — 안 재면 조용히 어긋난다. */
-.tz-shell{min-height:2100px}
-@media(min-width:760px){.tz-shell{min-height:1250px}}
+/* 로딩 중 완성 레이아웃의 높이를 미리 잡는다. 값은 라이브 실측이다(2026-08-09).
+     412px 폭 → main 1979~2138px (공역 데이터에 따라 변한다)
+     1280px 폭 → main 1240~1284px
+   높이가 데이터마다 달라 완전 일치는 불가능하다. 그래서 관측 구간의 가운데를 잡는다 —
+   최악의 경우 오차를 최소화하는 값이다. 실측 결과: 모바일 CLS 0.387 → 0.041, 데스크톱 0.003.
+   ⚠️ 레이아웃을 크게 바꾸면 다시 재라. 안 재면 조용히 어긋나고, 화면으로는 안 보인다. */
+.tz-shell{min-height:2050px}
+@media(min-width:760px){.tz-shell{min-height:1260px}}
 .tz-loading{min-height:220px;display:flex;flex-direction:column;justify-content:center;gap:16px}
 .tz-loading-eyebrow{display:flex;align-items:center;gap:8px}
 .tz-loading-sk{border-radius:10px;background:linear-gradient(90deg,rgba(255,255,255,.04),rgba(255,255,255,.09),rgba(255,255,255,.04));
