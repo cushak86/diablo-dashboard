@@ -77,7 +77,9 @@ export default function RootLayout({ children }) {
           <Link href="/privacy" style={{ color: "#8a8a8a" }}>개인정보처리방침</Link>
           {" · "}
           <a href="mailto:cushak@icloud.com" style={{ color: "#8a8a8a" }}>문의</a>
-          <div style={{ marginTop: 6, fontSize: 11, color: "#4a4a4a" }}>
+          {/* 면책은 가장 흐리면 안 되는 줄인데 #4a4a4a 라 대비 2.13:1 이었다(요구 4.5).
+              푸터 링크와 같은 #8a8a8a 로 맞춘다 — #111 위에서 5.47:1. */}
+          <div style={{ marginTop: 6, fontSize: 11, color: "#8a8a8a" }}>
             비공식 팬 사이트 · Diablo II: Resurrected는 Blizzard Entertainment, Inc.의 상표입니다.
           </div>
         </footer>

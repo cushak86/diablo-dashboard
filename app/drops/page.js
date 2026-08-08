@@ -230,6 +230,7 @@ export default function DropsPage() {
 
         <div className="card ti-searchbar">
           <input
+            aria-label="몹·지역 검색"
             className="ti-input"
             type="text"
             placeholder="검색: 예) 베르, ㅂㄹ, ber, 에니그마, 조던링, 샤코"

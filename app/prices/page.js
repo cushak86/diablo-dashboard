@@ -252,14 +252,18 @@ export default function PricesPage() {
             <form className="px-form" onSubmit={submit}>
               <div className="ti-sublbl">시세 제보 (단위: 룬)</div>
               <div className="ti-chips">
+                {/* 단위는 필수값인데(제출 시 !unit 이면 오류) 원래 <div onClick> 이라 Tab 이 닿지 않았다.
+                    키보드 사용자에게는 "단위를 선택해 주세요" 를 만족시킬 방법이 아예 없는 폼이었다. */}
                 {RUNE_UNITS.map((u) => (
-                  <div
+                  <button
                     key={u}
+                    type="button"
                     className={`ti-chip ${unit === u ? "on" : ""}`}
+                    aria-pressed={unit === u}
                     onClick={() => setUnit(u)}
                   >
                     {runeLabel(u)}
-                  </div>
+                  </button>
                 ))}
               </div>
               <input
@@ -270,6 +274,7 @@ export default function PricesPage() {
                 min="0"
                 max="9999"
                 step="0.5"
+                aria-label="제보 가격 (룬 개수)"
                 placeholder={`가격 (예: 2 = ${unit ? runeLabel(unit) : "룬"} 2개)`}
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
@@ -279,6 +284,7 @@ export default function PricesPage() {
                 style={{ marginTop: 10 }}
                 type="text"
                 maxLength={80}
+                aria-label="메모 (선택)"
                 placeholder="메모 (선택 · 예: 옵션·거래처)"
                 value={note}
                 onChange={(e) => setNote(e.target.value)}
@@ -293,7 +299,16 @@ export default function PricesPage() {
                 value={hp}
                 onChange={(e) => setHp(e.target.value)}
               />
-              {msg && <div className={`px-msg ${msg.type === "err" ? "err" : "ok"}`}>{msg.text}</div>}
+              {/* 라이브 리전은 항상 DOM 에 있어야 한다. 메시지와 동시에 노드가 생기면
+                  스크린리더가 그 삽입을 못 잡아서 아무것도 읽히지 않는다 — 내용만 비운다.
+                  이 폼은 "단위를 선택해 주세요" 같은 오류로만 진행이 막히므로 assertive 다. */}
+              <div
+                role={msg?.type === "err" ? "alert" : "status"}
+                aria-live={msg?.type === "err" ? "assertive" : "polite"}
+                className={msg ? `px-msg ${msg.type === "err" ? "err" : "ok"}` : undefined}
+              >
+                {msg ? msg.text : ""}
+              </div>
               <button type="submit" className="ti-btn" style={{ marginTop: 10 }} disabled={busy}>
                 {busy ? "제보 중…" : "제보하기"}
               </button>
@@ -316,6 +331,7 @@ export default function PricesPage() {
 
         <div className="card ti-searchbar">
           <input
+            aria-label="아이템 시세 검색"
             className="ti-input"
             type="text"
             placeholder="아이템 검색: 공허, ㅁㄴㄷ, enigma, infinity…"

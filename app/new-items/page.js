@@ -94,6 +94,7 @@ export default function NewItemsPage() {
 
         <div className="card ti-searchbar">
           <input
+            aria-label="아이템 한글·영문 검색"
             className="ti-input"
             type="text"
             placeholder="검색: 예) 공허, ㅁㄴㄷ, 지옥파수꾼, dreadfang, 잠복하는…"
@@ -102,23 +103,27 @@ export default function NewItemsPage() {
           />
           <div className="ti-chips">
             {CATS.map(([id, label]) => (
-              <div
+              <button
                 key={id}
+                type="button"
                 className={`ti-chip ${activeCat === id ? "on" : ""}`}
+                aria-pressed={activeCat === id}
                 onClick={() => setActiveCat(id)}
               >
                 {label}
-              </div>
+              </button>
             ))}
           </div>
           <div className="ti-sublbl">보기</div>
           <div className="ti-chips">
-            <div
+            <button
+              type="button"
               className={`ti-chip ${favOnly ? "on" : ""}`}
+              aria-pressed={favOnly}
               onClick={() => setFavOnly((v) => !v)}
             >
               ★ 즐겨찾기만
-            </div>
+            </button>
           </div>
           <div className="ti-count">{hits.length}개 아이템</div>
         </div>
@@ -135,9 +140,17 @@ export default function NewItemsPage() {
                   </div>
                   <div className="ti-en">
                     {it.en}
-                    <span className="ti-copy" onClick={() => copy(it.en)}>
+                    {/* 이 페이지는 "트레더리 한→영 검색"이다. 한글로 찾아 영문명을 복사하는 것이 전부인데,
+                        원래 <span onClick> 이라 그 동작만 키보드에서 사라져 있었다. aria-label 로
+                        무엇을 복사하는지도 들리게 한다("복사" 72개가 전부 같은 이름이었다). */}
+                    <button
+                      type="button"
+                      className="ti-copy"
+                      aria-label={`${it.en} 복사`}
+                      onClick={() => copy(it.en)}
+                    >
                       복사
-                    </span>
+                    </button>
                   </div>
                   {/* meta 는 "룬워드 · Hel + Shael + Ral · 3소켓 갑옷" 형태다 — 룬 이름만 한글로 바꿔 보여준다.
                       lib/items.js 값은 그대로 둔다(검색 색인·Traderie 링크가 영문 원문에 묶여 있다). */}

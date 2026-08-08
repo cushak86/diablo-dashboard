@@ -94,6 +94,7 @@ export default function RunewordsPage() {
 
         <div className="card ti-searchbar">
           <input
+            aria-label="룬워드 검색"
             className="ti-input"
             type="text"
             placeholder="검색: 예) 수수께끼, 무한, enigma, jahithber, ㅅㅅㄲ…"
@@ -102,32 +103,38 @@ export default function RunewordsPage() {
           />
           <div className="ti-chips">
             {CATS.map(([id, label]) => (
-              <div
+              <button
                 key={id}
+                type="button"
                 className={`ti-chip ${activeCat === id ? "on" : ""}`}
+                aria-pressed={activeCat === id}
                 onClick={() => setActiveCat(id)}
               >
                 {label}
-              </div>
+              </button>
             ))}
           </div>
           <div className="ti-sublbl">정렬 · 보기</div>
           <div className="ti-chips">
             {[["default", "기본"], ["level", "레벨↑"], ["sockets", "소켓↑"]].map(([id, label]) => (
-              <div
+              <button
                 key={id}
+                type="button"
                 className={`ti-chip ${sort === id ? "on" : ""}`}
+                aria-pressed={sort === id}
                 onClick={() => setSort(id)}
               >
                 {label}
-              </div>
+              </button>
             ))}
-            <div
+            <button
+              type="button"
               className={`ti-chip ${favOnly ? "on" : ""}`}
+              aria-pressed={favOnly}
               onClick={() => setFavOnly((v) => !v)}
             >
               ★ 즐겨찾기만
-            </div>
+            </button>
           </div>
           <div className="ti-count">{hits.length}개 룬워드</div>
         </div>

@@ -179,6 +179,7 @@ export default function GrailPage() {
 
         <div className="card ti-searchbar">
           <input
+            aria-label="아이템 검색"
             className="ti-input"
             type="text"
             placeholder="검색: 예) 공허, ㅁㄴㄷ, enigma, Ber…"
@@ -187,20 +188,29 @@ export default function GrailPage() {
           />
           <div className="ti-chips">
             {CATS.map(([id, label]) => (
-              <div
+              <button
                 key={id}
+                type="button"
                 className={`ti-chip ${activeCat === id ? "on" : ""}`}
+                aria-pressed={activeCat === id}
                 onClick={() => setActiveCat(id)}
               >
                 {label}
-              </div>
+              </button>
             ))}
           </div>
           <div className="ti-sublbl">보기</div>
           <div className="ti-chips">
-            <div className={`ti-chip ${todoOnly ? "on" : ""}`} onClick={() => setTodoOnly((v) => !v)}>
+            {/* 수집 트래커의 핵심 사용법이 "안 모은 것만 골라 보기"인데 키보드로 누를 수 없었다.
+                바로 아래 chk-reset 과 170개의 체크 버튼은 처음부터 <button> 이었다 — 여기만 div 였다. */}
+            <button
+              type="button"
+              className={`ti-chip ${todoOnly ? "on" : ""}`}
+              aria-pressed={todoOnly}
+              onClick={() => setTodoOnly((v) => !v)}
+            >
               미수집만
-            </div>
+            </button>
             <button type="button" className="chk-reset" onClick={reset}>기록 초기화</button>
           </div>
           <div className="ti-count">{hits.length}개 표시</div>
