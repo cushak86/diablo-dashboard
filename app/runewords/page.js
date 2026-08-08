@@ -132,22 +132,19 @@ export default function RunewordsPage() {
           <div className="ti-count">{hits.length}개 룬워드</div>
         </div>
 
+        {/*
+          카드에서 role="button" 을 뺐다(2026-08-09).
+          ARIA 에서 button 은 자손이 표현적(presentational)으로 취급되는 역할이라, 그 안에 넣은
+          details 99개의 옵션이 스크린리더에 통째로 노출되지 않았다 — 같은 날 오전에 "옵션을
+          서버 렌더 HTML 로 끌어냈다"고 커밋해 놓고 정작 보조기술 사용자에게는 여전히 없는
+          상태였다. 크롤러만 보고 사람을 안 본 것이다. (button 안에 대화형 요소를 두는 것 자체가
+          HTML 상 허용되지 않기도 하다.) 모달은 카드 아래 명시적 버튼으로 연다 — 카드 전체 클릭이라는
+          편의는 잃지만 같은 정보가 details 로 카드 안에 이미 있으므로 실질 손실이 없다.
+          **여기에 role="button" 을 다시 넣지 마라.**
+        */}
         <div className="rw-list">
           {hits.map((r) => (
-            <div
-              className="rw-card"
-              key={r.en}
-              role="button"
-              tabIndex={0}
-              aria-label={`${r.kr} ${r.en} 전체 옵션 보기`}
-              onClick={() => openTip(r)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" || e.key === " ") {
-                  e.preventDefault();
-                  openTip(r);
-                }
-              }}
-            >
+            <div className="rw-card" key={r.en}>
               <div className="rw-head">
                 <div className="rw-name">
                   {r.kr}
@@ -199,12 +196,9 @@ export default function RunewordsPage() {
               */}
               {r.stats?.length > 0 && (
                 <details className="rw-details">
-                  <summary
-                    onClick={(e) => e.stopPropagation()}
-                    onKeyDown={(e) => e.stopPropagation()}
-                  >
-                    전체 옵션 {r.stats.length}개
-                  </summary>
+                  {/* 카드가 더는 role=button 이 아니므로 stopPropagation 이 필요 없다 —
+                      클릭이 올라갈 상위 핸들러 자체가 없어졌다. */}
+                  <summary>전체 옵션 {r.stats.length}개</summary>
                   <ul className="rw-details-list">
                     {r.stats.map((s, i) => (
                       <li key={i}>{s}</li>
@@ -212,7 +206,14 @@ export default function RunewordsPage() {
                   </ul>
                 </details>
               )}
-              <div className="rw-more">큰 화면으로 보기 ▸</div>
+              <button
+                type="button"
+                className="rw-more"
+                aria-label={`${r.kr} ${r.en} 옵션 큰 화면으로 보기`}
+                onClick={() => openTip(r)}
+              >
+                큰 화면으로 보기 ▸
+              </button>
             </div>
           ))}
         </div>

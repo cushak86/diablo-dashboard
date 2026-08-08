@@ -25,7 +25,12 @@ export const metadata = {
     type: "website",
     siteName: "D2R 대시보드",
     locale: "ko_KR",
-    url: "/terror-zone",
+    // url 을 여기 두지 않는다(2026-08-09 제거). Next 는 자식이 openGraph 를 재선언하지 않으면
+    // 부모 것을 그대로 물려주는데, /privacy·/backup 은 재선언이 없어 **자기 주소가 아니라
+    // /terror-zone 을 og:url 로 신고하고 있었다.** 같은 페이지가 두 주소를 주장하는 상태다
+    // (canonical 은 각자 자기 자신을 가리킨다). 형제 저장소 budget-planner 에서 똑같은 결함을
+    // 2026-08-08 에 고쳤는데 여기만 남아 있었다 — 값을 빼면 소비자가 요청 URL 로 폴백해 저절로 맞는다.
+    // 탭 레이아웃들은 각자 url 을 선언하므로 영향 없다.
     title: "D2R 대시보드 | 공포의 영역 시간표 · 테러존 추적기",
     description:
       "디아블로2 레저렉션 실시간 공포의 영역(테러존) 추적 · 정각 카운트다운 · 음성 알림 · 우버 디아 진행도.",

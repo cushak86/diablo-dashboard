@@ -347,7 +347,11 @@ footer{text-align:center;color:#5a5a5a;font-size:12px;padding:10px 0 30px}
 .rw-card{cursor:pointer;transition:border-color .12s,transform .12s}
 .rw-card:hover{border-color:rgba(217,196,139,.35)}
 .rw-card:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
-.rw-more{margin-top:8px;font-size:11px;font-weight:700;color:var(--gold);opacity:.75}
+/* 카드에서 role=button 을 뺀 뒤 모달을 여는 유일한 조작점이 됐다(2026-08-09).
+   버튼 기본 스타일을 지우되 커서·정렬은 클릭 가능한 것처럼 유지한다. */
+.rw-more{margin-top:8px;font-size:11px;font-weight:700;color:var(--gold);opacity:.75;
+  background:none;border:0;padding:0;cursor:pointer;display:block;text-align:left;font-family:inherit}
+.rw-more:hover{opacity:1}
 
 /* 전체 옵션 인라인(2026-08-09) — 모달에만 있던 옵션을 서버 렌더 HTML 로 끌어낸 블록.
    /runewords·/new-items 공용. 접혀 있어도 내용이 HTML 에 존재하는 것이 목적이므로
