@@ -17,9 +17,11 @@ async function getPageStats() {
   if (!redis) return { rows: [], configured: false, today: todayKST() };
   const today = todayKST();
   try {
+    // 경로당 get 을 따로 쏘면 Upstash REST 왕복이 경로 수만큼 늘어난다(17경로 → 34회).
+    // mget 두 번이면 2회로 끝난다. dwell 은 해시라 hgetall 이 필요해 그대로 둔다.
     const [views, todayViews, dwells] = await Promise.all([
-      Promise.all(TRACKED_PATHS.map((p) => redis.get(`page:${p}`))),
-      Promise.all(TRACKED_PATHS.map((p) => redis.get(`page:${p}:${today}`))),
+      redis.mget(...TRACKED_PATHS.map((p) => `page:${p}`)),
+      redis.mget(...TRACKED_PATHS.map((p) => `page:${p}:${today}`)),
       Promise.all(TRACKED_PATHS.map((p) => redis.hgetall(`dwell:${p}`))),
     ]);
     const rows = TRACKED_PATHS.map((p, i) => {
