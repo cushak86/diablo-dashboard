@@ -36,6 +36,12 @@ export const metadata = {
     description: "디아블로2 레저렉션 실시간 테러존 추적기 · 우버 디아 진행도 · 트레더리 검색.",
   },
   robots: { index: true, follow: true },
+  // 검색엔진 소유확인 — 네이버 서치어드바이저(신 도메인 `d2r-dashboard.online`, 2026-08-08 등록).
+  // 구글은 `public/google13864aadd13454d3.html` 파일 방식이라 여기 없다(둘 다 유효, 방식만 다름).
+  // ⚠️ 지우면 네이버 소유확인이 풀린다 — 사이트가 확인된 뒤에도 태그는 유지해야 한다.
+  verification: {
+    other: { "naver-site-verification": "733019f1113bdb71b1b45f79d875d442f86fdb89" },
+  },
 };
 
 export default function RootLayout({ children }) {
