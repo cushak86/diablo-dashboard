@@ -2,7 +2,7 @@ import Link from "next/link";
 import { RW } from "../../lib/runewords";
 import { RUNES } from "../../lib/cube";
 import { TERROR_ZONES } from "../../lib/zones";
-import { SITE_PAGES } from "../../lib/site-pages";
+import { SITE_PAGES, OG_IMAGE } from "../../lib/site-pages";
 
 // 소개·연락처 페이지. 서버 컴포넌트 — 본문이 프리렌더 HTML에 그대로 박힌다.
 //
@@ -19,6 +19,7 @@ export const metadata = {
     "D2R 대시보드는 디아블로2 레저렉션 플레이에 필요한 도구를 한국어로 모은 비공식 팬 사이트입니다. 운영자, 데이터 출처와 한계, 연락 방법을 안내합니다.",
   alternates: { canonical: "/about" },
   openGraph: {
+    images: OG_IMAGE,
     url: "/about",
     title: "사이트 소개 · 연락처 | D2R 대시보드",
     description: "운영자·데이터 출처·연락 방법 안내. 비공식 팬 사이트입니다.",

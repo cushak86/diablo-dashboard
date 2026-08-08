@@ -3,7 +3,7 @@ import PageGuide from "./components/PageGuide";
 import { RW } from "../lib/runewords";
 import { RUNES } from "../lib/cube";
 import { TERROR_ZONES } from "../lib/zones";
-import { BASE, SITE_PAGES } from "../lib/site-pages";
+import { BASE, SITE_PAGES, OG_IMAGE } from "../lib/site-pages";
 
 // 루트(/)는 실제 랜딩 페이지다(2026-07-18 사장님 확정). 이전엔 /terror-zone으로 리다이렉트했으나,
 // 홈이 자체 색인·랭킹되고 전 탭으로 가는 내부 링크 허브가 되도록 실물 페이지로 전환했다.
@@ -13,6 +13,7 @@ export const metadata = {
     "디아블로2 레저렉션(D2R) 올인원 대시보드. 공포의 영역(테러존) 실시간 시간표, 직업별 빌드 가이드, 룬워드·홀리그레일·신규 아이템, 파밍 체크·드롭 위치, 프레임(FCR/FHR) 기준, 호라드릭 큐브 조합법, 룬 재고 계산까지 한 곳에서.",
   alternates: { canonical: "/" },
   openGraph: {
+    images: OG_IMAGE,
     type: "website",
     url: "/",
     title: "디아블로2 레저렉션 통합 대시보드 (D2R)",

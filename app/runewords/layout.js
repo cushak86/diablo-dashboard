@@ -1,3 +1,4 @@
+import { OG_IMAGE } from "../../lib/site-pages";
 import PageSchema from "../components/PageSchema";
 
 export const metadata = {
@@ -6,6 +7,7 @@ export const metadata = {
     "디아블로2 레저렉션(D2R) 룬워드 조합법. 룬 순서·소켓 수·베이스 아이템·요구 레벨을 정확히 정리. 악마술사의 군림(패치 3.0~3.2) 신규 룬워드(권위·마녀단·공허·경계·의식) 포함. 한글·영문·룬 검색 지원.",
   alternates: { canonical: "/runewords" },
   openGraph: {
+    images: OG_IMAGE,
     url: "/runewords",
     title: "룬워드 조합 검색 (신규 3.x 포함) | D2R 대시보드",
     description:
