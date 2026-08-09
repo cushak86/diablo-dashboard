@@ -57,13 +57,18 @@ export default function RootLayout({ children }) {
       <body>
         <header>
           <div className="wrap hd">
-            <div className="logo">
+            {/* 로고는 **홈으로 가는 링크**여야 한다 (2026-08-09 수정).
+                전에는 <div> 라서 홈으로 돌아갈 방법이 사이트 어디에도 없었다 —
+                탭 13개에 홈이 없고 푸터에도 없다. 로고를 누르면 홈으로 간다는 것은
+                웹에서 거의 유일하게 배우지 않아도 되는 규약이고, 없으면 주소창을 직접 고쳐야 한다.
+                test/nav.test.mjs 가 홈 링크가 남아 있는지 지킨다. */}
+            <Link href="/" className="logo" aria-label="D2R 대시보드 홈">
               <div className="mk">D2</div>
               <div>
                 <div className="t1">디아블로2 레저렉션 대시보드</div>
                 <div className="t2">D2R Dashboard</div>
               </div>
-            </div>
+            </Link>
             <DonationButton />
           </div>
           <TabNav />
