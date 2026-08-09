@@ -32,13 +32,16 @@ function pct(done, total) {
 }
 
 const read = (k) => { try { return localStorage.getItem(k); } catch { return null; } };
-const write = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+// 저장 성공 여부를 돌려준다 — 삼키기만 하면 화면만 올라가고 기록은 안 남는다(2026-08-09 감사).
+const write = (k, v) => { try { localStorage.setItem(k, v); return true; } catch { return false; } };
 
 const SCOPE_LABEL = { new: "3.x 신규", classic: "클래식", all: "전체" };
 
 export default function GrailPage() {
   const [collected, setCollected] = useState(() => new Set());
   const [scope, setScope] = useState("new");     // 기본 new — 기존 사용자의 화면·진행률이 그대로 유지된다
+  // 저장이 실패했는데 화면만 올라가면 사용자는 새로고침 뒤에야 알게 된다 — 그때는 이미 다 사라졌다.
+  const [saveFailed, setSaveFailed] = useState(false);
   const [readOnly, setReadOnly] = useState(false);
   const [noticeSeen, setNoticeSeen] = useState(true);  // 마운트 전엔 안내를 띄우지 않는다
   const [openItem, setOpenItem] = useState(null);      // 옵션 모달로 연 항목
@@ -58,7 +61,9 @@ export default function GrailPage() {
   }, []);
 
   function save(ids, nextScope = scope, seen = noticeSeen) {
-    persist(write, { ids, scope: nextScope, noticeSeen: seen, readOnly }, scopeOf);
+    const ok = persist(write, { ids, scope: nextScope, noticeSeen: seen, readOnly }, scopeOf);
+    // readOnly 는 의도된 미저장이라 경고하지 않는다. 그 외의 false 는 진짜 실패다.
+    if (!ok && !readOnly) setSaveFailed(true);
     schedulePush();
   }
 
@@ -177,6 +182,15 @@ export default function GrailPage() {
           )}
         </div>
 
+        {saveFailed && (
+          <div className="card" role="alert" style={{ borderColor: "rgba(193,39,45,.5)" }}>
+            <div className="eyebrow blood">저장 실패</div>
+            <p className="zen" style={{ marginTop: 6 }}>
+              이 브라우저에 수집 기록을 <b>저장하지 못했습니다</b> — 사생활 보호 모드이거나 저장 공간이 가득 찼을 수 있습니다.
+              화면의 진행률은 올라가지만 <b>새로고침하면 사라집니다.</b> 시크릿 창이라면 일반 창에서 다시 열어 주세요.
+            </p>
+          </div>
+        )}
         <div className="card ti-searchbar">
           <input
             aria-label="아이템 검색"

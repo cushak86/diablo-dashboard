@@ -67,7 +67,10 @@ export default function PricesPage() {
       const r = await fetch(`/api/price?itemKey=${encodeURIComponent(key)}`);
       setData(await r.json());
     } catch {
-      setData({ units: [], total: 0, recent: [], redis: false });
+      // 네트워크 실패를 "서버가 답했는데 비어 있다" 와 구분한다(2026-08-09 감사).
+      // 예전에는 redis:false·total:0 으로 채워서 화면이 "제보 저장소가 아직 설정되지 않았습니다"
+      // + "제보 0건" 을 띄웠다 — 둘 다 사실이 아니었다. 서버는 정상이고 내 연결이 끊긴 것이다.
+      setData({ netError: true, units: [], total: null, recent: [] });
     } finally {
       setLoading(false);
     }
@@ -87,6 +90,9 @@ export default function PricesPage() {
     if (!selected || busy) return;
     if (!unit) return setMsg({ type: "err", text: "단위(룬)를 선택해 주세요." });
     if (!price) return setMsg({ type: "err", text: "가격을 입력해 주세요." });
+    // 서버는 0 을 거부하는데 브라우저 검증은 min="0" 이라 통과시켰다(2026-08-09 감사).
+    // 같은 문구로 앞에서 막아, 눌러 보고 나서야 거부당하는 일이 없게 한다.
+    if (!(Number(price) > 0)) return setMsg({ type: "err", text: "가격은 0보다 커야 합니다." });
     setBusy(true);
     setMsg(null);
     try {
@@ -201,7 +207,7 @@ export default function PricesPage() {
                 {selected.kr} <span className="chk-sub" style={{ display: "inline" }}>· {selected.en}</span>
               </div>
               <div className="chk-sec-count">
-                {loading ? "불러오는 중…" : `제보 ${data?.total || 0}건`}
+                {loading ? "불러오는 중…" : data?.netError ? "제보 —건 (불러오지 못함)" : `제보 ${data?.total ?? 0}건`}
               </div>
             </div>
 
@@ -226,11 +232,20 @@ export default function PricesPage() {
               </div>
             )}
 
-            {data && data.redis === false && (
+            {/* 연결 실패와 "서버가 답했는데 비어 있다" 를 구분해서 말한다(2026-08-09 감사).
+                예전에는 fetch 가 실패하면 redis:false·total:0 으로 채워서
+                "저장소가 아직 설정되지 않았습니다" + "아직 제보가 없습니다" 를 띄웠다 — 둘 다 거짓이었다. */}
+            {data?.netError && (
+              <div className="px-msg err" role="alert">
+                지금 연결이 불안정해 시세를 불러오지 못했습니다. 아이템을 다시 눌러 주세요 — 서버에는 제보가 그대로 있습니다.
+              </div>
+            )}
+
+            {data && !data.netError && data.redis === false && (
               <div className="px-msg err">제보 저장소가 아직 설정되지 않았습니다. 제보는 저장되지 않습니다.</div>
             )}
 
-            {!loading && data && (data.units?.length ? (
+            {!loading && data && !data.netError && (data.units?.length ? (
               <>
               <div className="ti-sublbl" style={{ marginBottom: 6 }}>제보 기반 중앙값 <span className="px-low">· 동적 · 커뮤니티</span></div>
               <div className="px-unit-grid">
@@ -271,7 +286,7 @@ export default function PricesPage() {
                 style={{ marginTop: 10 }}
                 type="number"
                 inputMode="decimal"
-                min="0"
+                min="0.5"
                 max="9999"
                 step="0.5"
                 aria-label="제보 가격 (룬 개수)"

@@ -154,6 +154,13 @@ export async function POST(req) {
 
     return NextResponse.json({ ok: true });
   } catch {
+    // "잠시 후 다시 시도" 라고 안내하면서 정작 쿨다운·하루 한도는 이미 소모시키고 있었다
+    // (2026-08-09 감사). 저장이 안 됐는데 10분을 기다려야 하는 건 안내와 정반대다.
+    // 실패했으면 소모분을 되돌린다 — 되돌리기 자체가 실패해도 원래 오류를 가리지 않는다.
+    try {
+      await redis.del(`cd:price:${h}:${itemKey}`);
+      await redis.decr(`rl:price:${day}:${h}`); // rlKey 는 try 블록 스코프라 여기선 안 보인다 — 같은 규칙으로 다시 만든다
+    } catch {}
     return NextResponse.json({ error: "제보 저장에 실패했습니다. 잠시 후 다시 시도해 주세요." }, { status: 500 });
   }
 }
