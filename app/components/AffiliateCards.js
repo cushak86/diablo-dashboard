@@ -23,7 +23,8 @@ export default function AffiliateCards() {
       {/* ★ 고지는 반드시 카드보다 위. 내리지 마라. */}
       <p className="zen" style={{ marginTop: 8 }}>
         이 페이지는 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.
-        게임 데이터와 무관한 실물 주변기기이며, 특정 브랜드를 권하지 않습니다.
+        게임 데이터와 무관한 실물 주변기기입니다. 이 사이트는 제품을 직접 시험해 보지 않았고,
+        아래는 이 게임의 조작 방식과 관련이 있다고 판단한 예시입니다.
       </p>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 14 }}>
