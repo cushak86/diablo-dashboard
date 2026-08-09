@@ -3,10 +3,17 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { BUILDS, allClasses, buildsByClass } from "../../lib/builds";
-import { RW } from "../../lib/runewords";
+import { RW, NEW_RW_BADGE } from "../../lib/runewords";
 
 // 룬워드 id(en) → 한국어명 조회. 카드에는 한글명 표기, 링크는 /runewords 허브로.
 const RW_KR = Object.fromEntries(RW.map((r) => [r.en, r.kr]));
+
+// 3.x 신규 룬워드는 룬 조합이 아직 비공식이다. 이 페이지는 화면에서
+// "검증이 끝나지 않은 항목은 검증중 배지로 고지합니다(날조 금지)"라고 약속해 놓고
+// 정작 미검증 4종(공허·권위·마녀단·경계)을 배지 없이 BiS 로 추천하고 있었다(2026-08-09 감사).
+// builds.js 는 장비를 한글 이름으로 적고 keyRunewords 는 영문 id 라 양쪽으로 색인한다.
+const RW_UNVERIFIED = new Set(RW.filter((r) => r.isNew).flatMap((r) => [r.en, r.kr]));
+const isUnverifiedRW = (name) => RW_UNVERIFIED.has(String(name).trim());
 
 // 소유 파일(globals.css 미수정) 제약상 섹션 헤더/보조 텍스트는 인게임 색상 변수로 인라인 스타일.
 const HD = { fontSize: 11, fontWeight: 800, letterSpacing: ".16em", color: "var(--gold)", textTransform: "uppercase", marginTop: 14, marginBottom: 6 };
@@ -166,7 +173,8 @@ export default function BuildPage() {
               <div className="ti-chips">
                 {b.keyRunewords.map((id) => (
                   <Link className="ti-chip" href="/runewords" key={id}>
-                    {RW_KR[id] || id} ↗
+                    {RW_KR[id] || id}
+                    {isUnverifiedRW(id) && <span className="rw-newtag">{NEW_RW_BADGE}</span>} ↗
                   </Link>
                 ))}
               </div>
@@ -183,6 +191,7 @@ export default function BuildPage() {
                             <span key={g.name}>
                               {i > 0 && <span style={{ color: "#555" }}> · </span>}
                               <b style={{ color: "var(--parch)" }}>{g.name}</b>
+                              {isUnverifiedRW(g.name) && <span className="rw-newtag">{NEW_RW_BADGE}</span>}
                               {g.note && <span style={{ color: "#8a8a8a" }}> ({g.note})</span>}
                             </span>
                           ))}

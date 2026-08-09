@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { RUNES } from "../../lib/cube";
 import { runeLabel } from "../../lib/rune-names";
-import { RW } from "../../lib/runewords";
+import { RW, NEW_RW_BADGE } from "../../lib/runewords";
 import { STATUS, planRuneword, sanitizeStock } from "../../lib/rune-planner";
 import { schedulePush } from "../../lib/sync";
 
@@ -173,7 +173,7 @@ export default function PlannerPage() {
                 <div className="rw-head">
                   <div className="rw-name">
                     {rw.kr}
-                    {rw.isNew && <span className="rw-newtag">NEW 3.x · 검증 필요</span>}
+                    {rw.isNew && <span className="rw-newtag">{NEW_RW_BADGE}</span>}
                   </div>
                   <div className="rw-kr">{rw.en}</div>
                   <span className={`rp-tag rp-${status.toLowerCase()}`}>

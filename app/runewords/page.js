@@ -3,7 +3,7 @@
 import { useMemo, useState, useEffect } from "react";
 import { runewordCubeCost } from "../../lib/cube";
 import { runeLabel } from "../../lib/rune-names";
-import { RW } from "../../lib/runewords";
+import { RW, NEW_RW_BADGE } from "../../lib/runewords";
 import { schedulePush } from "../../lib/sync";
 import { indexOf, matches } from "../../lib/item-search";
 import ItemTip, { StatList } from "../components/ItemTip";
@@ -155,7 +155,7 @@ export default function RunewordsPage() {
               <div className="rw-head">
                 <div className="rw-name">
                   {r.kr}
-                  {r.isNew && <span className="rw-newtag">NEW 3.x</span>}
+                  {r.isNew && <span className="rw-newtag">{NEW_RW_BADGE}</span>}
                 </div>
                 <div className="rw-kr">{r.en}</div>
                 <button
@@ -230,7 +230,7 @@ export default function RunewordsPage() {
 
         <div className="note">
           <b>수록 범위</b> — 악마술사의 군림(패치 3.0~3.2) 신규 룬워드 7종 + D2R 전체 클래식·래더 룬워드까지
-          <b>총 99종</b>을 모두 수록했습니다. 룬 순서·소켓 수·베이스·요구 레벨을 정본 기준으로 정리했습니다.
+          <b>총 99종</b>을 모두 수록했습니다. 룬 순서·소켓 수·베이스·요구 레벨을 정본 기준으로 정리했습니다. 다만 <b>3.x 신규 7종은 룬 조합·옵션 모두 비공식 정보</b>여서 카드에 「검증 필요」로 표시했습니다 — 그 7종에는 「정본 기준」이 적용되지 않습니다.
           <br />
           <b>이름 표기</b> — <b>한글명(공식 클라이언트 표기)을 기준</b>으로 하고, 커뮤니티·거래에서 표준으로
           쓰이는 영문명을 보조로 함께 표기했습니다. 검색은 한글·영문·룬 이름 모두 지원합니다.

@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { RUNES } from "../../lib/cube";
 import { runeLabel } from "../../lib/rune-names";
-import { RW } from "../../lib/runewords";
+import { RW, NEW_RW_BADGE } from "../../lib/runewords";
 import { STATUS, suggest, sanitizeStock } from "../../lib/rune-planner";
 
 const LS_KEY = "runes:v1"; // 룬 재고 탭(/planner)과 공유하는 저장소
@@ -106,7 +106,7 @@ export default function RunePlanPage() {
                 <div className="rw-head">
                   <div className="rw-name">
                     {rw.kr}
-                    {rw.isNew && <span className="rw-newtag">NEW 3.x</span>}
+                    {rw.isNew && <span className="rw-newtag">{NEW_RW_BADGE}</span>}
                   </div>
                   <div className="rw-kr">{rw.en}</div>
                   <span className={`rp-tag rp-${status.toLowerCase()}`}>
