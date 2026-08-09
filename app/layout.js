@@ -5,6 +5,7 @@ import TabNav from "./components/TabNav";
 import DonationButton from "./components/DonationButton";
 import PageTracker from "./components/PageTracker";
 import SyncBootstrap from "./components/SyncBootstrap";
+import SideRail from "./components/SideRail";
 
 export const metadata = {
   // 사이트 주소 정본은 lib/site-pages.js 의 BASE 하나다 — 커스텀 도메인으로 옮길 때 그 한 줄만 고치면
@@ -68,6 +69,11 @@ export default function RootLayout({ children }) {
         </header>
         <SyncBootstrap />
         {children}
+        {/* 사이드 배너 — **모든 페이지**에 한 번만 붙인다(사장님 지시 2026-08-09).
+            position:fixed 라 여기 둬도 화면 위치는 CSS 가 정하고, 문서 흐름은 안 건드린다.
+            본문 뒤인 이유: 도구가 먼저 읽히고 광고가 나중에 오는 것이 스크린리더 순서로도 맞다.
+            배너가 없으면 SideRail 이 스스로 null 을 반환한다 — 지금이 그 상태다. */}
+        <SideRail />
         {/* 전역 푸터 — 소개·정책·연락처는 **모든 페이지에서 한 번에 닿아야** 한다.
             탭 내비게이션은 이미 13개라 여기에 더 넣으면 도구 탭이 묻힌다. globals.css:81의
             footer 스타일이 원래 있었는데 정작 <footer> 요소가 없었다(2026-08-05 확인). */}
