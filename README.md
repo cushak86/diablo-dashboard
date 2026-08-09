@@ -49,7 +49,8 @@ lib/
   backup.js        개인 데이터 export/import + import 검증 (순수 함수)
   price-*.js       시세 기준선(AS_OF 상수)·카탈로그·제보 로직
   items.js, auth.js, redis.js, docs.js, pages.js
-test/              node 단위 테스트 (의존성 0 — npm test)
+test/              node 단위 테스트 (의존성 0). run-all.mjs 가 *.test.mjs 를 전부 찾아 돌린다 —
+                   새 테스트를 만들면 등록 없이 자동으로 포함된다
 index.html         (참고) 서버 없이 여는 오프라인 모의 뷰어. Next 앱과 무관
 ```
 
@@ -59,7 +60,7 @@ index.html         (참고) 서버 없이 여는 오프라인 모의 뷰어. Nex
 npm install
 cp .env.local.example .env.local   # 토큰 입력 후
 npm run dev                        # http://localhost:3000
-npm test                           # 단위 테스트 (rune-planner · backup · price-baseline)
+npm test                           # test/*.test.mjs 전부 (개수는 여기 적지 않는다 — 아래 참조)
 npm run build                      # 프로덕션 빌드
 ```
 
