@@ -10,7 +10,11 @@
 //
 // 순서가 중요하다: 키 파일 public/<키>.txt가 라이브에서 200으로 서빙된 뒤에만 제출이 검증된다.
 
-const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? "https://d2r-dashboard.online";
+// 주소 정본은 lib/site-pages.js 의 BASE 하나다 — 여기서 문자열을 다시 적으면 도메인을 옮길 때
+// 이 스크립트만 옛 주소로 색인 제출을 계속한다. 환경변수 우선은 그대로 둔다(스테이징용).
+import { BASE as SITE_BASE } from "../lib/site-pages.js";
+
+const BASE = process.env.NEXT_PUBLIC_SITE_URL ?? SITE_BASE;
 const KEY = "128b8fd59b74d5b0e0907c6c12545156";
 const KEY_LOCATION = `${BASE}/${KEY}.txt`;
 const ENDPOINT = "https://api.indexnow.org/IndexNow";
