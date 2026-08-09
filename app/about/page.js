@@ -28,6 +28,7 @@ export const metadata = {
 
 const CONTACT = "cushak@icloud.com";
 
+import AffiliateCards from "../components/AffiliateCards";
 export default function AboutPage() {
   return (
     <main>
@@ -91,6 +92,9 @@ export default function AboutPage() {
             직접 만든 것입니다. 권리자께서 문제를 제기하시면 위 연락처로 알려주시는 대로 조치하겠습니다.
           </p>
         </div>
+
+        {/* 제휴 카드 — 소개·면책을 다 읽은 뒤 자리. 도구 화면에는 넣지 않는다. */}
+        <AffiliateCards />
       </div>
     </main>
   );

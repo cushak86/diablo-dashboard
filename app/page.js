@@ -53,6 +53,7 @@ const LD = {
   inLanguage: "ko",
 };
 
+import AffiliateCards from "./components/AffiliateCards";
 export default function HomePage() {
   return (
     <main>
@@ -118,6 +119,12 @@ export default function HomePage() {
           { q: "정보가 틀렸습니다.", a: "게임 클라이언트 실측이 정본입니다. 다른 표기나 수치를 발견하시면 알려주시면 확인해 고칩니다 — 실제로 룬 한글 표기 6건이 그렇게 정정됐습니다." },
         ]}
       />
+
+      {/* 제휴 카드 — 도구 카드와 FAQ 를 다 보여준 **뒤**에 둔다.
+          도구 화면에는 넣지 않는다(lib/affiliate.js 머리말의 「안 놓는 곳」). */}
+      <div className="wrap" style={{ marginTop: 20 }}>
+        <AffiliateCards />
+      </div>
     </main>
   );
 }
