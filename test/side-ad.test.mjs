@@ -10,7 +10,7 @@
 //   `.tz-shell` 에 높이를 예약해 뒀다. 레일이 흐름에 참여하는 순간 그 작업이 무너진다.
 //   전제가 조용히 무너지는 것을 막는 것이 이 파일의 일이다.
 
-import { readFileSync } from "node:fs";
+import { readFileSync, existsSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { SIDE_ADS, activeSideAds } from "../lib/side-ad.js";
@@ -80,6 +80,25 @@ console.log("\n[사이드 배너] 무게·안전");
   // 이미지가 있으면 w·h 가 함께 있어야 한다. 없으면 도착할 때 레일 안에서 리플로가 난다.
   const noSize = SIDE_ADS.filter((a) => a.image && !(Number(a.w) > 0 && Number(a.h) > 0)).map((a) => a.name);
   check(`이미지가 있으면 w·h 도 있다${noSize.length ? " — " + noSize.join(", ") : ""}`, noSize.length === 0);
+}
+
+{
+  // ★ 경로 **형식**만 보면 오타 한 글자를 못 잡는다. 파일이 실제로 있는지 디스크에서 확인한다.
+  //   빌드는 통과하고 배포도 되지만 방문자에겐 깨진 이미지가 나간다 — 화면은 멀쩡해 보이는 쪽의 실패다.
+  //   선언한 w·h 가 파일의 실제 크기와 같은지도 본다(다르면 브라우저가 잡아 둔 자리가 틀려 리플로가 난다).
+  //   형제 저장소(budget-planner)에서 파일명 오타와 크기 오선언을 실제로 심어 둘 다 잡히는 것을 확인했다.
+  const bad = [];
+  for (const a of SIDE_ADS) {
+    if (!a.image) continue;
+    const p = join(ROOT, "public", String(a.image).replace(/^\//, ""));
+    if (!existsSync(p)) { bad.push(`${a.name}: ${a.image} 파일 없음`); continue; }
+    const buf = readFileSync(p);
+    // WebP 손실 포맷(VP8 )만 크기를 읽는다. VP8X·VP8L 은 배치가 달라 건너뛴다(존재 확인은 이미 했다).
+    if (buf.subarray(12, 16).toString("latin1") !== "VP8 ") continue;
+    const w = buf.readUInt16LE(26) & 0x3fff, h = buf.readUInt16LE(28) & 0x3fff;
+    if (w !== a.w || h !== a.h) bad.push(`${a.name}: 선언 ${a.w}×${a.h} ≠ 실제 ${w}×${h}`);
+  }
+  check(`이미지 파일이 실제로 있고 크기가 선언과 같다${bad.length ? " — " + bad.join(" / ") : ""}`, bad.length === 0);
 }
 
 {

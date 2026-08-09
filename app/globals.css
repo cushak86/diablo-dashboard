@@ -603,14 +603,19 @@ button.ti-chip{font-family:inherit;line-height:inherit}
    특히 /terror-zone 의 .tz-shell 높이 예약(CLS 0.387→0.041)을 무너뜨리지 않는다. */
 .side-rail{display:none}
 @media (min-width:1360px){
-  .side-rail{display:block;position:fixed;top:96px;right:16px;width:160px;z-index:30;
+  .side-rail{display:block;position:fixed;top:80px;right:16px;width:160px;z-index:30;
     /* 짧은 화면에서 배너가 화면 밖으로 흘러나가지 않게 — 레일 안에서만 스크롤된다. */
-    max-height:calc(100vh - 118px);overflow-y:auto;overscroll-behavior:contain}
+    max-height:calc(100vh - 96px);overflow-y:auto;overscroll-behavior:contain}
 }
 .side-rail-disc{font-size:10px;line-height:1.4;color:#8a8a8a;margin:0 0 6px}
 .side-rail-item{display:block;margin-bottom:10px;padding:9px 10px;border:1px solid var(--line);
   border-radius:10px;background:var(--panel);text-decoration:none}
-.side-rail-item img{display:block;width:100%;height:auto;border-radius:6px;margin-bottom:7px}
+/* 높이를 **고정**한다 — 상품 사진은 비율이 제각각이라(320×298 ~ 320×328) 그대로 두면 카드 높이가
+   들쭉날쭉해지고, 4장이 세로로 쌓이면 그 차이가 누적돼 마지막 카드가 화면 밖으로 밀린다.
+   contain 이라 잘리지 않는다. 배경 흰색은 원본 평탄화와 맞춘 것이다(어두운 카드 위 흰 상품 타일).
+   img 에 width·height 속성이 그대로 있어 브라우저는 여전히 자리를 미리 잡는다. */
+.side-rail-item img{display:block;width:100%;height:84px;object-fit:contain;background:#fff;
+  border-radius:6px;margin-bottom:7px}
 .side-rail-item strong{display:block;font-size:12px;line-height:1.35;font-weight:700;color:var(--parch)}
 .side-rail-item span{display:block;margin-top:3px;font-size:11px;line-height:1.45;color:#8a8a8a}
 /* 링크라는 것이 보여야 누른다 — 글자 카드는 이미지가 없어 눌러도 되는지가 안 드러난다.
