@@ -24,6 +24,20 @@ function check(name, ok) {
   else { console.log(`  ✗ ${name}`); fails.push(name); }
 }
 
+/**
+ * 소스에서 **주석을 걷어낸다.**
+ *
+ * 2026-08-09 하루에 이걸로 **세 번** 틀렸다. "여기에 <script> 를 넣지 마라",
+ * "localStorage 로 영구히 하면 안 된다" 같은 **경고문 자체**가 금지 대상으로 잡혀 실패했다.
+ * 금지 대상을 설명하는 글과 금지 대상 자체를 구분 못 하는 검사는, 반대로 진짜를 놓칠 때도
+ * 이유를 못 댄다. 그래서 매번 인라인으로 걷지 말고 **여기 한 곳**을 쓴다.
+ *
+ * 블록 주석 먼저, 그다음 줄 주석 — "https://" 가 잘리지 않게 앞 문자가 ':' 이 아닐 때만.
+ */
+function codeOf(src) {
+  return src.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+}
+
 const rail = readFileSync(join(ROOT, "app", "components", "SideRail.js"), "utf8");
 const layout = readFileSync(join(ROOT, "app", "layout.js"), "utf8");
 const css = readFileSync(join(ROOT, "app", "globals.css"), "utf8");
@@ -53,12 +67,8 @@ console.log("\n[사이드 배너] 무게·안전");
 
 {
   // 전 페이지에 붙는 물건이라 무게가 그대로 곱해진다.
-  //
-  // ⚠️ **주석을 먼저 걷어낸다.** 안 걷으면 "여기에 <script> 를 넣지 마라"는 경고문 자체가
-  //    <script> 로 잡혀 실패한다(형제 저장소 budget-planner 에서 오늘 실제로 그렇게 실패했다).
-  //    금지 대상을 설명하는 글과 금지 대상 자체를 구분 못 하는 검사는, 반대로 진짜를 놓칠 때도
-  //    이유를 못 댄다. 블록 주석 먼저, 그다음 줄 주석 — "https://" 가 잘리지 않게 앞이 ':' 이 아닐 때만.
-  const code = rail.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+  // 주석을 걷어낸 코드만 본다 — 이유는 codeOf() 머리말.
+  const code = codeOf(rail);
   check(
     "SideRail 에 <script>·<iframe>·dangerouslySetInnerHTML 이 없다",
     !/<script|<iframe|dangerouslySetInnerHTML/.test(code)
@@ -142,6 +152,69 @@ console.log("\n[사이드 배너] 표시 규칙");
 
 {
   check("모든 페이지에 붙어 있다(app/layout.js)", /<SideRail\s*\/>/.test(layout));
+}
+
+console.log("\n[하단 바] 좁은 화면 — 레일과 상보적이어야 한다");
+
+const bottom = readFileSync(join(ROOT, "app", "components", "BottomAd.js"), "utf8");
+
+{
+  // ★ 이 검사가 이 절의 존재 이유다.
+  //   레일은 min-width N 에서, 하단 바는 max-width M 에서 뜬다. **M + 1 === N** 이어야
+  //   광고가 없는 구간도, 둘이 겹치는 구간도 없다.
+  //   2026-08-09 에 레일만 만들어 두었다가 모바일·태블릿에 광고가 0 이었던 것이 이 검사의 계기다.
+  //   한쪽 숫자만 고치면 그 구멍이 소리 없이 돌아온다.
+  const railBp = Number(/@media\s*\(min-width:\s*(\d+)px\)\s*\{\s*\.side-rail\s*\{/.exec(css)?.[1]);
+  const barBp = Number(/@media\s*\(max-width:\s*(\d+)px\)\s*\{\s*\.bottom-ad\s*\{/.exec(css)?.[1]);
+  check(
+    `레일(≥${railBp}px)과 하단 바(≤${barBp}px)가 빈틈없이 이어진다`,
+    Number.isFinite(railBp) && Number.isFinite(barBp) && barBp + 1 === railBp
+  );
+}
+
+{
+  check(".bottom-ad 기본값이 display:none", /\.bottom-ad\{display:none\}/.test(css));
+  check("모든 페이지에 붙어 있다(app/layout.js)", /<BottomAd\s*\/>/.test(layout));
+}
+
+{
+  // 좁아서 줄이더라도 "쿠팡 파트너스"와 "수수료"는 남아야 한다. 그리고 상품명보다 **위**.
+  const disc = bottom.indexOf("쿠팡 파트너스 수수료를 받습니다");
+  const name = bottom.indexOf("{ad.name}");
+  check("고지에 「쿠팡 파트너스」·「수수료」가 있고 상품명보다 위", disc > 0 && name > 0 && disc < name);
+}
+
+{
+  check(
+    'rel="sponsored nofollow noopener" 가 걸려 있다',
+    bottom.includes('rel="sponsored nofollow noopener"')
+  );
+}
+
+{
+  // /terror-zone 은 정각 직전에 급히 보는 화면이다. 안 닫히는 배너는 최악이다.
+  // 그리고 **세션 동안만** 기억해야 한다 — localStorage 면 광고가 영영 안 뜬다.
+  check("닫기 버튼이 있다", /aria-label="광고 닫기"/.test(bottom));
+  check(
+    "닫힘을 sessionStorage 에 저장한다(localStorage 아님)",
+    codeOf(bottom).includes("sessionStorage") && !codeOf(bottom).includes("localStorage")
+  );
+}
+
+{
+  // 랜덤이면 서버·클라이언트가 다른 값을 내 하이드레이션이 깨진다.
+  check(
+    "상품 선택이 결정적이다(Math.random·Date 없음)",
+    codeOf(bottom).includes("pickForPath") && !/Math\.random|new Date|Date\.now/.test(codeOf(bottom))
+  );
+}
+
+{
+  // 토스트(.ti-toast)가 하단 바에 가리면 사용자가 동작 결과를 못 본다.
+  const toastZ = Number(/\.ti-toast\{[\s\S]*?z-index:\s*(\d+)/.exec(css)?.[1]);
+  const barZ = Number(/\.bottom-ad\{[\s\S]*?z-index:\s*(\d+)/.exec(css)?.[1]);
+  check(`토스트 z-index(${toastZ})가 하단 바(${barZ})보다 높다`, toastZ > barZ);
+  check("좁은 화면에서 토스트를 바 위로 올린다", /max-width:\s*1359px\)\{\.ti-toast\{bottom:\s*\d+px\}/.test(css));
 }
 
 console.log(`\n${"─".repeat(46)}`);
