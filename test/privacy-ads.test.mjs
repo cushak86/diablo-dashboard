@@ -16,6 +16,7 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { activeSideAds } from "../lib/side-ad.js";
 import { activeProducts } from "../lib/affiliate.js";
+import { ADSENSE_CLIENT } from "../lib/adsense.js";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 let pass = 0;
@@ -60,7 +61,7 @@ if (광고있음) {
   );
 }
 
-console.log("\n[ads.txt] 게시자 선언");
+console.log("\n[애드센스] 게시자 선언이 서로 맞는다");
 {
   let txt = "";
   try { txt = readFileSync(join(ROOT, "public", "ads.txt"), "utf8"); } catch { /* 없음 */ }
@@ -69,6 +70,22 @@ console.log("\n[ads.txt] 게시자 선언");
     "public/ads.txt 가 있고 형식이 맞다",
     /^google\.com,\s*pub-\d{16},\s*DIRECT,\s*f08c47fec0942fa0\s*$/m.test(txt)
   );
+
+  // ★ ads.txt 의 번호와 코드의 번호가 **같아야 한다.**
+  //   다르면 애드센스가 "승인되지 않은 판매자"로 보고 광고를 아예 안 준다.
+  //   그런데 화면으로는 아무 차이가 없다 — 페이지는 멀쩡하고 광고 자리만 비어 있다.
+  const adsTxtPub = /pub-(\d{16})/.exec(txt)?.[1] ?? "";
+  const codePub = /ca-pub-(\d{16})/.exec(ADSENSE_CLIENT)?.[1] ?? "";
+  check(
+    `ads.txt 와 코드의 게시자 ID 가 같다 (${adsTxtPub || "?"} vs ${codePub || "?"})`,
+    !!adsTxtPub && adsTxtPub === codePub
+  );
+
+  // 심사는 **원본 HTML** 에서 스니펫을 찾는다. next/script 로 감싸면 거기 안 남는다.
+  const layout = readFileSync(join(ROOT, "app", "layout.js"), "utf8");
+  const lbody = layout.replace(/\{\/\*[\s\S]*?\*\/\}/g, "");
+  check("레이아웃이 애드센스 로더를 <script> 로 싣는다", /pagead2\.googlesyndication\.com\/pagead\/js\/adsbygoogle\.js/.test(lbody));
+  check("소유확인 meta(google-adsense-account)가 있다", /"google-adsense-account"/.test(lbody));
 }
 
 console.log(`\n${"─".repeat(46)}`);

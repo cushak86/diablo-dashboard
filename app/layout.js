@@ -1,6 +1,7 @@
 import "./globals.css";
 import Link from "next/link";
 import { BASE } from "../lib/site-pages";
+import { ADSENSE_CLIENT } from "../lib/adsense";
 import TabNav from "./components/TabNav";
 import DonationButton from "./components/DonationButton";
 import PageTracker from "./components/PageTracker";
@@ -49,11 +50,32 @@ export const metadata = {
   verification: {
     other: { "naver-site-verification": "733019f1113bdb71b1b45f79d875d442f86fdb89" },
   },
+  // 애드센스 사이트 소유권 확인용 meta (2026-08-14 신청 준비).
+  // 서버 렌더 HTML 의 <head> 에 그대로 나가므로 심사 로봇이 확실히 찾는다.
+  // 게시자 ID 는 공개 값이다(lib/adsense.js 머리말) — 비밀이 아니라 커밋해도 된다.
+  other: { "google-adsense-account": ADSENSE_CLIENT },
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="ko">
+      <head>
+        {/*
+          애드센스 로더 — **원본 HTML <head> 에 실제 <script> 로** 넣는다 (2026-08-14).
+          next/script 로 감싸면 원본 HTML 에 안 남아 심사의 "코드 스니펫" 확인이 실패한다
+          (형제 사이트 budget-planner 가 그렇게 한 번 겪었고 그 주석이 거기 남아 있다).
+
+          ⚠️ Auto ads 는 애드센스 콘솔에서 켜는 것이라 **코드로는 못 막는다.** 켜면 이 스크립트가
+             우리가 정한 자리 밖에도 광고를 주입한다 — /terror-zone 처럼 정각 직전에 급히 보는
+             화면이 흔들릴 수 있으니, 승인 후 콘솔에서 Auto ads 를 켤지 따로 판단해야 한다.
+             (형제 사이트는 그 이유로 볼트 화면에서 로더 자체를 뺐다. 여기는 볼트가 없다.)
+        */}
+        <script
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+          crossOrigin="anonymous"
+        />
+      </head>
       <body>
         <header>
           <div className="wrap hd">
