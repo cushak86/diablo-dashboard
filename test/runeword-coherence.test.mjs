@@ -73,23 +73,21 @@ t("items.js 의 룬워드가 runewords.js 와 같은 룬·소켓·베이스를 �
   assert.deepEqual(bad, [], `\n       ${bad.join("\n       ")}\n       고치는 법: lib/items.js 의 meta 를 손으로 적지 말고 runewords.js 에서 파생시켜라.`);
 });
 
-t("3.x 미검증 표시가 두 파일에서 일치한다", () => {
-  const unverifiedRW = new Set(RW.filter((r) => (r.stats ?? []).some((x) => /검증 필요/.test(x))).map((r) => r.en));
-  const isNew = new Set(RW.filter((r) => r.isNew).map((r) => r.en));
-  assert.deepEqual([...unverifiedRW].sort(), [...isNew].sort(),
-    "runewords.js 안에서 '검증 필요' 마커와 isNew 가 어긋난다");
+// 2026-08-27: 3.x 7종의 룬 조합·옵션이 diablo-mdb(CASC 대조) 정본으로 바뀌었다. "검증 필요" 마커는 더 이상
+// 없어야 하고, 두 파일의 isNew 집합은 같아야 한다(배지가 한쪽에만 뜨던 2026-08-09 회귀 방지).
+t("'검증 필요' 마커가 남아 있지 않다 — 옵션은 mdb 정본이다", () => {
+  const stale = RW.filter((r) => (r.stats ?? []).some((x) => /검증 필요/.test(x))).map((r) => r.en);
+  assert.deepEqual(stale, [], "값이 의심되면 손으로 '검증 필요' 를 되살리지 말고 diablo-mdb 에 이슈로 올려라.");
+});
 
+t("3.x 신규(isNew) 집합이 두 파일에서 일치한다", () => {
+  const isNew = new Set(RW.filter((r) => r.isNew).map((r) => r.en));
   const bad = [];
   for (const it of ITEMS) {
     if (it.cat !== "rw") continue;
-    if (unverifiedRW.has(it.en) && !it.unverified) {
-      bad.push(`${it.kr}(${it.en}): runewords.js 는 '검증 필요' 인데 items.js 에 unverified 가 없다`);
-    }
-    if (!unverifiedRW.has(it.en) && it.unverified) {
-      bad.push(`${it.kr}(${it.en}): items.js 만 unverified 다`);
-    }
+    if (isNew.has(it.en) !== Boolean(it.isNew)) bad.push(`${it.kr}(${it.en}): runewords.js isNew=${isNew.has(it.en)} · items.js isNew=${Boolean(it.isNew)}`);
   }
-  assert.deepEqual(bad, [], `\n       ${bad.join("\n       ")}\n       고치는 법: items.js 의 룬워드 줄에 unverified 를 runewords.js 의 isNew 와 맞춰라.`);
+  assert.deepEqual(bad, [], `\n       ${bad.join("\n       ")}\n       고치는 법: items.js 는 isNew 를 runewords.js 에서 파생시킨다 — 손으로 적지 마라.`);
 });
 
 console.log(`\n[룬워드] ${pass}개 통과`);

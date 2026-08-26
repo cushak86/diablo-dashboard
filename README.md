@@ -44,7 +44,7 @@ app/
 lib/
   zones.js         TZ 지역 데이터 · 모의 로테이션 · 영문→한글 퍼지 매칭
   cube.js          33룬 · 보석 · 큐브 승급 규칙(needCount) — 룬 데이터 정본
-  runewords.js     룬워드 99종 (isNew = 3.x 신규 7종, 룬 조합 미검증)
+  runewords.js     룬워드 99종 (isNew = 3.x 신규 7종 — 옵션은 scripts/sync-runeword-stats.mjs 가 diablo-mdb 에서 생성)
   rune-planner.js  룬 재고 판정 엔진 (순수 함수, /planner가 사용)
   backup.js        개인 데이터 export/import + import 검증 (순수 함수)
   price-*.js       시세 기준선(AS_OF 상수)·카탈로그·제보 로직

@@ -138,10 +138,9 @@ export default function NewItemsPage() {
                 <div className="ti-names">
                   <div className={`ti-kr ti-${it.cat}`}>
                     {it.kr} <span className={`ti-tag ti-tag-${it.cat}`}>{CAT_LABEL[it.cat]}</span>
-                    {/* 3.x 룬워드는 룬 조합이 아직 비공식이다. /runewords 만 이걸 표시하고
-                        여기선 안 해서, 같은 조합을 한쪽은 미검증·한쪽은 사실로 내놓고 있었다
-                        (2026-08-09 감사). unverified 는 lib/items.js 가 runewords.js 에서 파생시킨다. */}
-                    {it.unverified && <span className="rw-newtag">{NEW_RW_BADGE}</span>}
+                    {/* 3.x 신규 배지. /runewords 와 같은 문구(NEW_RW_BADGE)·같은 집합(isNew) 을 써야 한다 —
+                        2026-08-09 감사에서 한쪽만 표시하다 갈라졌다. isNew 는 lib/items.js 가 runewords.js 에서 파생시킨다. */}
+                    {it.isNew && <span className="rw-newtag">{NEW_RW_BADGE}</span>}
                   </div>
                   <div className="ti-en">
                     {it.en}

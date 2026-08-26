@@ -20,7 +20,7 @@ export default function PlannerPage() {
   // 재고: {룬이름: 개수}. 초기 빈 객체 → SSR/클라 첫 렌더 일치(하이드레이션 안전), 마운트 후 로드.
   const [stock, setStock] = useState({});
   const [show, setShow] = useState({ ready: true, cubable: true, short: false });
-  const [verifiedOnly, setVerifiedOnly] = useState(false); // 3.x 신규 7종 숨기기(기본 OFF = 전부 표시)
+  const [verifiedOnly, setVerifiedOnly] = useState(false); // 3.x 신규 7종 숨기기(기본 OFF = 전부 표시). 이름은 옛 뜻(미검증) — 2026-08-27 부터 검증됐고 "신규 제외" 토글이다
 
   useEffect(() => {
     try {
@@ -152,9 +152,9 @@ export default function PlannerPage() {
             <button
               className={`btn ${verifiedOnly ? "btn-on" : "btn-off"}`}
               onClick={() => setVerifiedOnly((v) => !v)}
-              title="3.x 신규 룬워드는 룬 조합이 비공식이라 검증되지 않았습니다"
+              title="패치 3.0~3.2 신규 룬워드 7종을 목록에서 뺍니다 (룬 조합은 게임 데이터 대조본)"
             >
-              검증된 것만
+              3.x 신규 제외
             </button>
           </div>
 

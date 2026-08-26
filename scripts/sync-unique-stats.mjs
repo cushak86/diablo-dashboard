@@ -26,14 +26,15 @@ if (!root || !fs.existsSync(path.join(root, "data/uniques.json"))) {
 }
 
 import { execSync } from "node:child_process";
+import { pathToFileURL } from "node:url";
 // mdb 커밋 해시를 파생 파일에 남긴다 — "이 값이 어느 시점 mdb 에서 왔나"를 나중에 반드시 묻게 된다(mdb 요청).
 let mdbRev = "unknown";
 try { mdbRev = execSync("git log --format=%h -1", { cwd: root }).toString().trim(); } catch {}
 
 const U = JSON.parse(fs.readFileSync(path.join(root, "data/uniques.json"), "utf8"));
 const S = JSON.parse(fs.readFileSync(path.join(root, "data/sets.json"), "utf8"));
-const { CLASSIC } = await import(path.join(process.cwd(), "lib/grail-classic.js"));
-const { ITEMS } = await import(path.join(process.cwd(), "lib/items.js"));
+const { CLASSIC } = await import(pathToFileURL(path.join(process.cwd(), "lib/grail-classic.js")).href);
+const { ITEMS } = await import(pathToFileURL(path.join(process.cwd(), "lib/items.js")).href);
 
 // 🔴 우리 두 데이터 파일의 `en` 은 **의미가 다르다.** 조인 축도 달라야 한다:
 //   - `grail-classic.js` 의 en = 덤프 **내부 식별자**(`Cutthroat1`·`Mindrend`)  → mdb `source_key`
@@ -102,11 +103,14 @@ for (const o of targets) {
     lines.push(st.text);
     shown++;
   }
+  // 3.3(래더 15시즌)부터 기존 아이템의 *변경* 이 래더에만 들어간다. mdb 는 래더 판본을 싣고 `ladder` 로 알린다
+  // (consuming.md §5). 비래더 이용자에겐 이 수치가 아니므로 마지막 줄로 밝힌다 — 두 판본을 다 싣지는 않는다(mdb 도 안 싣는다).
+  if (lines.length && m.ladder) lines.push(`※ 래더 ${m.ladder.first}시즌 판본 — 비래더는 이전 수치`);
   if (lines.length) out[o.id] = lines;
 }
 
 const body = `// 자동 생성 — 직접 수정하지 마라. \`node scripts/sync-unique-stats.mjs <mdb-clone>\` 로 다시 만든다.
-// 출처: diablo-mdb ${mdbRev} (D2R 설치본 스트링 빌드 3.2.92777). uniques _generated=${U._generated} · sets _generated=${S._generated}
+// 출처: diablo-mdb ${mdbRev} (D2R 3.3.93847 CASC 대조본). uniques _generated=${U._generated} · sets _generated=${S._generated}
 //
 // 그레일 id → 옵션 줄(한글). mdb 가 렌더한 \`stats[].text\` 원문이다 — 우리가 조립하지 않는다(descfunc 함정).
 // \`displayed:false\` 줄은 제외했다(게임도 옵션으로 안 보여준다). 한 속성이 여러 줄인 것(지옥포의 화염·번개·냉기)은
