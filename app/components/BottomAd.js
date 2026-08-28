@@ -3,6 +3,8 @@
 import { useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { activeSideAds, pickForPath } from "../../lib/side-ad";
+import { won } from "../../lib/coupang";
+import { useCoupangProducts } from "./useCoupang";
 
 /**
  * 좁은 화면용 하단 고정 광고 — **사이드 레일이 안 뜨는 모든 폭**을 덮는다.
@@ -11,6 +13,9 @@ import { activeSideAds, pickForPath } from "../../lib/side-ad";
  * 사장님 지시는 "모든 페이지에 계속 노출"인데 폭 조건 때문에 절반이 비어 있었다.
  * globals.css 의 `.bottom-ad` 는 1359px **이하**에서만 뜬다 — 레일과 정확히 상보적이고,
  * test/side-ad.test.mjs 가 두 브레이크포인트가 어긋나지 않는지 본다.
+ *
+ * 2026-08-27 부터 상품은 /api/coupang(쿠팡 파트너스 Open API)에서 온다. 첫 렌더와 API 실패 시엔
+ * 정적 배너(lib/side-ad.js) — SideRail 과 같은 폴백 규칙이다.
  *
  * 이 사이트에서 특히 조심할 것: /terror-zone 은 정각 직전에 **급히 보는** 화면이다.
  * 그래서 (1) position:fixed 로 문서 흐름 밖에 두어 카운트다운을 밀지 않고,
@@ -57,12 +62,16 @@ function closeIt() {
 export default function BottomAd() {
   const closed = useSyncExternalStore(subscribe, isClosed, serverClosed);
   const pathname = usePathname();
-  const ads = activeSideAds();
+  const products = useCoupangProducts();
+  const statics = activeSideAds();
 
-  if (ads.length === 0) return null;
+  if (statics.length === 0 && products.length === 0) return null;
   if (closed) return null;
 
-  const ad = pickForPath(ads, pathname ?? "/");
+  const p = products.length ? pickForPath(products, pathname ?? "/") : null;
+  const ad = p
+    ? { url: p.url, image: p.image, w: 44, h: 44, name: `${p.name} · ${won(p.price)}`, lazy: true }
+    : pickForPath(statics, pathname ?? "/");
 
   return (
     <aside className="bottom-ad" aria-label="광고">
@@ -74,8 +83,8 @@ export default function BottomAd() {
         referrerPolicy="no-referrer"
       >
         {ad.image ? (
-          // eslint-disable-next-line @next/next/no-img-element -- 로컬 정적 배너. 레일과 같은 파일을 쓴다.
-          <img src={ad.image} alt="" width={ad.w} height={ad.h} />
+          // eslint-disable-next-line @next/next/no-img-element -- 정적 배너는 레일과 같은 로컬 파일, API 상품은 쿠팡 광고 서버 원본. CSS 가 44px 로 고정.
+          <img src={ad.image} alt="" width={ad.w} height={ad.h} loading={ad.lazy ? "lazy" : undefined} />
         ) : null}
         <span className="bottom-ad-text">
           {/* ★ 고지가 상품명보다 위. 순서를 바꾸지 마라. */}

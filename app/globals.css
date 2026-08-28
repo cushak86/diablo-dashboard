@@ -621,7 +621,10 @@ button.ti-chip{font-family:inherit;line-height:inherit}
    img 에 width·height 속성이 그대로 있어 브라우저는 여전히 자리를 미리 잡는다. */
 .side-rail-item img{display:block;width:100%;height:84px;object-fit:contain;background:#fff;
   border-radius:6px;margin-bottom:7px}
-.side-rail-item strong{display:block;font-size:12px;line-height:1.35;font-weight:700;color:var(--parch)}
+/* API 상품명은 길다("FURYCUBE G11 초경량 무선 게이밍 마우스 PAW3311 센서 …"). 두 줄에서 자른다 —
+   안 자르면 카드가 늘어져 아래 배너를 화면 밖으로 민다(정적 배너의 24자 규칙과 같은 이유). */
+.side-rail-item strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  font-size:12px;line-height:1.35;font-weight:700;color:var(--parch)}
 .side-rail-item span{display:block;margin-top:3px;font-size:11px;line-height:1.45;color:#8a8a8a}
 /* 링크라는 것이 보여야 누른다 — 글자 카드는 이미지가 없어 눌러도 되는지가 안 드러난다.
    --gold 는 이 사이트가 '누를 수 있는 것'에 쓰는 색이다(.eyebrow.gold, .ti-btn). */
