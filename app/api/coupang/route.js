@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getRedis } from "../../../lib/redis";
-import { buildRequest, keywordFor, normalize } from "../../../lib/coupang";
+import { buildRequest, keywordsFor, normalize } from "../../../lib/coupang";
 
 /**
  * GET /api/coupang → { products: [...], keyword, cached }
@@ -24,41 +24,53 @@ const ok = (body) =>
     headers: { "Cache-Control": "public, s-maxage=3600, stale-while-revalidate=86400" },
   });
 
+async function forKeyword(keyword, accessKey, secretKey) {
+  const key = `coupang:v1:${keyword}`;
+  const m = mem.get(keyword);
+  if (m && Date.now() - m.at < TTL * 1000) return { products: m.products, cached: "mem" };
+
+  const redis = getRedis();
+  if (redis) {
+    const hit = await redis.get(key).catch(() => null);
+    if (Array.isArray(hit) && hit.length) {
+      mem.set(keyword, { at: Date.now(), products: hit });
+      return { products: hit, cached: "redis" };
+    }
+  }
+
+  const { url, headers } = buildRequest({ accessKey, secretKey, keyword });
+  const res = await fetch(url, { headers, cache: "no-store" });
+  const json = await res.json();
+  if (!res.ok || String(json.rCode) !== "0") throw new Error(`coupang ${res.status} rCode=${json.rCode} ${json.rMessage || ""}`);
+
+  const products = normalize(json.data?.productData);
+  if (products.length) {
+    mem.set(keyword, { at: Date.now(), products });
+    if (redis) await redis.set(key, products, { ex: TTL }).catch(() => {});
+  }
+  return { products, cached: false };
+}
+
 export async function GET() {
   const accessKey = process.env.COUPANG_ACCESS_KEY;
   const secretKey = process.env.COUPANG_SECRET_KEY;
-  if (!accessKey || !secretKey) return ok({ products: [], keyword: null, cached: false });
+  if (!accessKey || !secretKey) return ok({ products: [], keywords: [], cached: false });
 
-  const keyword = keywordFor();
-  const key = `coupang:v1:${keyword}`;
-
-  try {
-    const m = mem.get(keyword);
-    if (m && Date.now() - m.at < TTL * 1000) return ok({ products: m.products, keyword, cached: "mem" });
-
-    const redis = getRedis();
-    if (redis) {
-      const hit = await redis.get(key);
-      if (Array.isArray(hit) && hit.length) {
-        mem.set(keyword, { at: Date.now(), products: hit });
-        return ok({ products: hit, keyword, cached: "redis" });
-      }
+  const keywords = keywordsFor();
+  const seen = new Set();
+  const products = [];
+  const cached = [];
+  // 키워드 하나가 실패해도 다른 하나는 낸다. 둘 다 실패하면 빈 배열 — 클라이언트는 정적 배너로 폴백한다.
+  for (const kw of keywords) {
+    try {
+      const r = await forKeyword(kw, accessKey, secretKey);
+      cached.push(r.cached);
+      for (const p of r.products) if (!seen.has(p.id)) { seen.add(p.id); products.push(p); }
+    } catch (e) {
+      console.error("[coupang]", kw, e?.message || e);
+      cached.push("error");
     }
-
-    const { url, headers } = buildRequest({ accessKey, secretKey, keyword });
-    const res = await fetch(url, { headers, cache: "no-store" });
-    const json = await res.json();
-    if (!res.ok || String(json.rCode) !== "0") throw new Error(`coupang ${res.status} rCode=${json.rCode} ${json.rMessage || ""}`);
-
-    const products = normalize(json.data?.productData);
-    if (products.length) {
-      mem.set(keyword, { at: Date.now(), products });
-      if (redis) await redis.set(key, products, { ex: TTL }).catch(() => {});
-    }
-    return ok({ products, keyword, cached: false });
-  } catch (e) {
-    // 실패는 조용히 — 로그만 남기고 빈 배열. 클라이언트는 정적 배너로 폴백한다.
-    console.error("[coupang]", e?.message || e);
-    return NextResponse.json({ products: [], keyword, cached: false }, { headers: { "Cache-Control": "public, s-maxage=300" } });
   }
+  if (!products.length) return NextResponse.json({ products: [], keywords, cached }, { headers: { "Cache-Control": "public, s-maxage=300" } });
+  return ok({ products, keywords, cached });
 }

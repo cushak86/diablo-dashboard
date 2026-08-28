@@ -6,7 +6,9 @@ import { pickN, won } from "../../lib/coupang";
 import { useCoupangProducts } from "./useCoupang";
 
 /**
- * 오른쪽 여백에 고정으로 붙는 사이드 배너 — **모든 페이지**(app/layout.js 에서 한 번 붙인다).
+ * 여백에 고정으로 붙는 사이드 배너 — **모든 페이지**(app/layout.js 에서 붙인다).
+ *   · 오른쪽(기본): ≥1360px.   · 왼쪽(`side="left"`): ≥1680px — 2026-08-27 "공격적 노출" 지시로 추가.
+ *   두 레일은 다른 상품을 고른다(경로 해시에 side 를 섞는다).
  *
  * 2026-08-27 부터 두 겹이다:
  *   · 서버 렌더·첫 화면: lib/side-ad.js 의 정적 배너 4개(로컬 이미지) — 지금까지와 같다.
@@ -32,17 +34,17 @@ import { useCoupangProducts } from "./useCoupang";
  * ⚠️ 여기에 스크립트나 프레임 요소를 넣지 마라. 전 페이지에 붙는 물건이라 무게가 그대로 곱해진다.
  *    test/side-ad.test.mjs 가 막는다(주석은 걷어내고 코드만 본다).
  */
-export default function SideRail() {
+export default function SideRail({ side = "right" }) {
   const pathname = usePathname();
   const products = useCoupangProducts();
-  const api = pickN(products, pathname ?? "/", 4);
+  const api = pickN(products, `${pathname ?? "/"}#${side}`, 4);
   const ads = api.length
     ? api.map((p) => ({ key: p.id, url: p.url, image: p.image, w: 140, h: 84, name: p.name, text: `${won(p.price)}${p.rocket ? " · 로켓배송" : ""}`, lazy: true }))
     : activeSideAds().map((a) => ({ key: a.url, ...a }));
   if (ads.length === 0) return null;
 
   return (
-    <aside className="side-rail" aria-label="광고">
+    <aside className={side === "left" ? "side-rail left" : "side-rail"} aria-label="광고">
       {/* ★ 고지는 반드시 배너보다 위. 내리지 마라. */}
       <p className="side-rail-disc">쿠팡 파트너스 활동의 일환으로 수수료를 제공받습니다.</p>
 

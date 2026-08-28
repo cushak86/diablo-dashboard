@@ -55,7 +55,8 @@ t("게임 소프트웨어·아이템 거래를 팔지 않는다", () => {
 console.log("\n[제휴] 표시 규칙");
 
 t("고지가 링크보다 위에 있고 rel 이 붙어 있다", () => {
-  const src = readFileSync(join(ROOT, "app", "components", "AffiliateCards.js"), "utf8");
+  // 2026-08-27: 카드의 실제 렌더는 ProductStrip 으로 옮겼다(API 상품). 고지·링크가 거기 있다.
+  const src = readFileSync(join(ROOT, "app", "components", "ProductStrip.js"), "utf8");
   const iNotice = src.indexOf("쿠팡 파트너스 활동의 일환");
   const iLink = src.indexOf("href={p.url}");
   assert.ok(iNotice >= 0, "고지 문구가 없다");

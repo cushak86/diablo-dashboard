@@ -612,6 +612,12 @@ button.ti-chip{font-family:inherit;line-height:inherit}
     /* 짧은 화면에서 배너가 화면 밖으로 흘러나가지 않게 — 레일 안에서만 스크롤된다. */
     max-height:calc(100vh - 96px);overflow-y:auto;overscroll-behavior:contain}
 }
+/* 왼쪽 레일(2026-08-27) — 1680px 이상에서만. 960 + (160+16+24)*2 = 1360 이 오른쪽 기준이었고,
+   왼쪽까지 두려면 여백이 양쪽에 필요하므로 더 넓을 때만 켠다. 규칙은 오른쪽과 같다(fixed·흐름 밖). */
+.side-rail.left{display:none}
+@media (min-width:1680px){
+  .side-rail.left{display:block;right:auto;left:16px}
+}
 .side-rail-disc{font-size:10px;line-height:1.4;color:#8a8a8a;margin:0 0 6px}
 .side-rail-item{display:block;margin-bottom:10px;padding:9px 10px;border:1px solid var(--line);
   border-radius:10px;background:var(--panel);text-decoration:none}
@@ -652,3 +658,22 @@ button.ti-chip{font-family:inherit;line-height:inherit}
 /* 44px 최소 타깃 — 닫기가 안 눌리면 못 닫는 배너와 같다. */
 .bottom-ad-x{flex-shrink:0;width:44px;border:0;border-left:1px solid var(--line);background:transparent;
   color:#8a8a8a;font-size:20px;line-height:1;cursor:pointer;font-family:inherit}
+
+/* 본문 끝 상품 스트립(app/components/ProductStrip.js) — 모든 페이지 푸터 위 + 홈·소개 카드 안.
+   카드 높이를 **고정**한다: 첫 렌더는 정적 배너, 마운트 뒤 API 상품으로 바뀌는데 그때 아무것도 움직이면 안 된다
+   (/terror-zone 의 CLS 작업). 좁은 화면은 가로 스크롤(스냅), 넓으면 격자. */
+.pstrip{margin-top:24px}
+.pstrip-disc{margin-top:6px}
+.pstrip-row{display:grid;grid-auto-flow:column;grid-auto-columns:150px;gap:10px;margin-top:12px;
+  overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:6px;-webkit-overflow-scrolling:touch}
+@media (min-width:700px){
+  .pstrip-row{grid-auto-flow:row;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));grid-auto-columns:auto;overflow:visible}
+}
+.pstrip-item{display:flex;flex-direction:column;height:236px;padding:10px;border:1px solid var(--line);border-radius:10px;
+  background:var(--panel);text-decoration:none;scroll-snap-align:start}
+.pstrip-item img{display:block;width:100%;height:110px;object-fit:contain;background:#fff;border-radius:6px}
+.pstrip-item strong{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  margin-top:8px;font-size:12px;line-height:1.35;font-weight:700;color:var(--parch)}
+.pstrip-item span{display:block;margin-top:3px;font-size:11px;line-height:1.4;color:#8a8a8a;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pstrip-item em{display:block;margin-top:auto;font-size:11px;font-style:normal;color:var(--gold)}

@@ -8,6 +8,7 @@ import PageTracker from "./components/PageTracker";
 import SyncBootstrap from "./components/SyncBootstrap";
 import SideRail from "./components/SideRail";
 import BottomAd from "./components/BottomAd";
+import ProductStrip from "./components/ProductStrip";
 
 export const metadata = {
   // 사이트 주소 정본은 lib/site-pages.js 의 BASE 하나다 — 커스텀 도메인으로 옮길 때 그 한 줄만 고치면
@@ -97,12 +98,18 @@ export default function RootLayout({ children }) {
         </header>
         <SyncBootstrap />
         {children}
+        {/* 본문 끝 상품 스트립 — 모든 페이지(사장님 지시 2026-08-27 "공격적 노출"). 도구 **다음**이라 조작을 막지
+            않고, 카드 높이가 CSS 로 고정돼 API 상품 도착 시 아무것도 안 움직인다. 홈·/about 은 본문 안에
+            AffiliateCards(8개)가 따로 있어 여기 것과 다른 상품이 걸린다(seed 가 다르다). */}
+        <div className="wrap"><ProductStrip /></div>
         {/* 사이드 배너 — **모든 페이지**에 한 번만 붙인다(사장님 지시 2026-08-09).
             position:fixed 라 여기 둬도 화면 위치는 CSS 가 정하고, 문서 흐름은 안 건드린다.
             본문 뒤인 이유: 도구가 먼저 읽히고 광고가 나중에 오는 것이 스크린리더 순서로도 맞다.
-            배너가 없으면 SideRail 이 스스로 null 을 반환한다 — 지금이 그 상태다. */}
+            2026-08-27 부터 상품은 쿠팡 파트너스 API 에서 오고 정적 배너는 폴백이다. */}
         <SideRail />
-        {/* 좁은 화면(1359px 이하)용 하단 바 — 레일과 상보적이라 동시에 뜨지 않는다. */}
+        {/* 왼쪽 레일 — 1680px 이상에서만(2026-08-27). 오른쪽과 다른 상품을 고른다. */}
+        <SideRail side="left" />
+        {/* 좁은 화면(1359px 이하)용 하단 바 — 레일과 상보적이라 동시에 뜨지 않는다. 8초마다 자동 회전. */}
         <BottomAd />
         {/* 전역 푸터 — 소개·정책·연락처는 **모든 페이지에서 한 번에 닿아야** 한다.
             탭 내비게이션은 이미 13개라 여기에 더 넣으면 도구 탭이 묻힌다. globals.css:81의

@@ -1,9 +1,9 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { activeSideAds, pickForPath } from "../../lib/side-ad";
-import { won } from "../../lib/coupang";
+import { pickN, won } from "../../lib/coupang";
 import { useCoupangProducts } from "./useCoupang";
 
 /**
@@ -65,10 +65,20 @@ export default function BottomAd() {
   const products = useCoupangProducts();
   const statics = activeSideAds();
 
+  // 자동 회전(2026-08-27 "공격적 노출"): API 상품이 2개 이상이면 8초마다 다음 상품. 마운트 뒤에만 도니
+  // 서버·첫 렌더는 여전히 경로 해시 하나로 고정이다(하이드레이션 안전). 닫기는 그대로 세션 동안 유지.
+  const [tick, setTick] = useState(0);
+  useEffect(() => {
+    if (products.length < 2) return;
+    const id = setInterval(() => setTick((t) => t + 1), 8000);
+    return () => clearInterval(id);
+  }, [products.length]);
+
   if (statics.length === 0 && products.length === 0) return null;
   if (closed) return null;
 
-  const p = products.length ? pickForPath(products, pathname ?? "/") : null;
+  const order = products.length ? pickN(products, pathname ?? "/", products.length) : [];
+  const p = order.length ? order[tick % order.length] : null;
   const ad = p
     ? { url: p.url, image: p.image, w: 44, h: 44, name: `${p.name} · ${won(p.price)}`, lazy: true }
     : pickForPath(statics, pathname ?? "/");
