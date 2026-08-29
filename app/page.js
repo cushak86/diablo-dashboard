@@ -4,6 +4,7 @@ import { RW } from "../lib/runewords";
 import { RUNES } from "../lib/cube";
 import { TERROR_ZONES } from "../lib/zones";
 import { BASE, SITE_PAGES, OG_IMAGE } from "../lib/site-pages";
+import { GUIDES } from "../lib/guides";
 
 // 루트(/)는 실제 랜딩 페이지다(2026-07-18 사장님 확정). 이전엔 /terror-zone으로 리다이렉트했으나,
 // 홈이 자체 색인·랭킹되고 전 탭으로 가는 내부 링크 허브가 되도록 실물 페이지로 전환했다.
@@ -83,6 +84,19 @@ export default function HomePage() {
               </Link>
             ))}
           </div>
+        </div>
+
+        {/* 가이드 — 사이트 안에 쌓는 글(2026-08-27). 홈이 링크 허브이므로 여기서도 잇는다. 정본은 lib/guides.js. */}
+        <div className="card">
+          <div className="eyebrow gold">가이드 — 게임 데이터로 확인한 글</div>
+          <ul className="info" style={{ marginTop: 8 }}>
+            {GUIDES.map((g) => (
+              <li key={g.slug}>
+                <b><Link href={`/guide/${g.slug}`} style={{ color: "var(--gold)" }}>{g.title}</Link></b>
+                <span>{g.summary}</span>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="note">

@@ -55,14 +55,18 @@ const listed = [...SITE_PAGES.map((p) => p.path), ...EXCLUDED_PATHS].sort();
 console.log(`\n[집합] app/ 의 모든 라우트가 색인할지 말지를 밝힌다 (실제 ${actual.length}개)`);
 {
   // 어느 쪽에도 없는 라우트 = 새로 만들고 아무 데도 등록 안 한 페이지. 이게 이 파일의 존재 이유다.
-  const unlisted = actual.filter((r) => !listed.includes(r));
+  // 동적 라우트(/guide/[slug])는 정적 접두(/guide/)로 시작하는 구체 경로가 표에 있으면 등록된 것으로 본다(2026-08-27).
+  const prefixOf = (r) => (r.includes("[") ? r.slice(0, r.indexOf("[")) : null);
+  const isListed = (r) => listed.includes(r) || (prefixOf(r) && listed.some((p) => p.startsWith(prefixOf(r))));
+  const unlisted = actual.filter((r) => !isListed(r));
   check(
     `등록 안 된 라우트 없음${unlisted.length ? " — " + unlisted.join(", ") : ""}`,
     unlisted.length === 0
   );
 
   // 반대 방향: 표에는 있는데 실물이 없는 경로. 사이트맵이 404 를 신고하게 된다.
-  const ghost = listed.filter((r) => !actual.includes(r));
+  const isReal = (p) => actual.includes(p) || actual.some((r) => prefixOf(r) && p.startsWith(prefixOf(r)));
+  const ghost = listed.filter((r) => !isReal(r));
   check(
     `실물 없는 경로를 표가 주장하지 않음${ghost.length ? " — " + ghost.join(", ") : ""}`,
     ghost.length === 0
@@ -107,7 +111,9 @@ console.log("\n[고아] 사이트맵에 실은 페이지는 사이트 안에서 
   const layoutLinks = [...layout.matchAll(/href="(\/[a-z0-9/-]*)"/g)].map((m) => m[1]);
   const reachable = new Set([...TABS.map((t) => t.href), ...layoutLinks]);
 
-  const orphans = SITE_PAGES.map((p) => p.path).filter((p) => !reachable.has(p));
+  // 가이드 글은 목차(/guide)가 링크한다 — 목차가 도달 가능하면 글도 도달 가능한 것으로 본다(글 정본 lib/guides.js 에서 파생).
+  const viaIndex = (p) => p.startsWith("/guide/") && reachable.has("/guide");
+  const orphans = SITE_PAGES.map((p) => p.path).filter((p) => !reachable.has(p) && !viaIndex(p));
   check(
     `사이트맵 ${SITE_PAGES.length}개 전부 도달 가능${orphans.length ? " — 고아: " + orphans.join(", ") : ""}`,
     orphans.length === 0

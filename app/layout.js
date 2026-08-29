@@ -101,20 +101,24 @@ export default function RootLayout({ children }) {
         {/* 본문 끝 상품 스트립 — 모든 페이지(사장님 지시 2026-08-27 "공격적 노출"). 도구 **다음**이라 조작을 막지
             않고, 카드 높이가 CSS 로 고정돼 API 상품 도착 시 아무것도 안 움직인다. 홈·/about 은 본문 안에
             AffiliateCards(8개)가 따로 있어 여기 것과 다른 상품이 걸린다(seed 가 다르다). */}
-        <div className="wrap"><ProductStrip /></div>
+        {/* ADS_LITE=1 (Vercel env) 이면 스트립·왼쪽 레일을 끈다 — 애드센스 심사 기간처럼 광고 밀도를 낮춰야 할 때의
+            스위치(2026-08-27). 오른쪽 레일·하단 바·홈 카드는 남는다. 코드를 고치지 않고 env 만 바꾸고 재배포하면 된다. */}
+        {process.env.ADS_LITE !== "1" && <div className="wrap"><ProductStrip /></div>}
         {/* 사이드 배너 — **모든 페이지**에 한 번만 붙인다(사장님 지시 2026-08-09).
             position:fixed 라 여기 둬도 화면 위치는 CSS 가 정하고, 문서 흐름은 안 건드린다.
             본문 뒤인 이유: 도구가 먼저 읽히고 광고가 나중에 오는 것이 스크린리더 순서로도 맞다.
             2026-08-27 부터 상품은 쿠팡 파트너스 API 에서 오고 정적 배너는 폴백이다. */}
         <SideRail />
         {/* 왼쪽 레일 — 1680px 이상에서만(2026-08-27). 오른쪽과 다른 상품을 고른다. */}
-        <SideRail side="left" />
+        {process.env.ADS_LITE !== "1" && <SideRail side="left" />}
         {/* 좁은 화면(1359px 이하)용 하단 바 — 레일과 상보적이라 동시에 뜨지 않는다. 8초마다 자동 회전. */}
         <BottomAd />
         {/* 전역 푸터 — 소개·정책·연락처는 **모든 페이지에서 한 번에 닿아야** 한다.
             탭 내비게이션은 이미 13개라 여기에 더 넣으면 도구 탭이 묻힌다. globals.css:81의
             footer 스타일이 원래 있었는데 정작 <footer> 요소가 없었다(2026-08-05 확인). */}
         <footer>
+          <Link href="/guide" style={{ color: "#8a8a8a" }}>가이드</Link>
+          {" · "}
           <Link href="/about" style={{ color: "#8a8a8a" }}>사이트 소개</Link>
           {" · "}
           <Link href="/privacy" style={{ color: "#8a8a8a" }}>개인정보처리방침</Link>
