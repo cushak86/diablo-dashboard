@@ -6,6 +6,7 @@ import { runeLabel } from "../../lib/rune-names";
 import { RW, NEW_RW_BADGE } from "../../lib/runewords";
 import { STATUS, planRuneword, sanitizeStock } from "../../lib/rune-planner";
 import { schedulePush } from "../../lib/sync";
+import ItemTip, { StatList } from "../components/ItemTip";
 
 const LS_KEY = "runes:v1";
 const MAX = 99; // 룬당 재고 상한(엔진은 안전정수까지 받지만 입력은 여기서 막는다)
@@ -21,6 +22,9 @@ export default function PlannerPage() {
   const [stock, setStock] = useState({});
   const [show, setShow] = useState({ ready: true, cubable: true, short: false });
   const [verifiedOnly, setVerifiedOnly] = useState(false); // 3.x 신규 7종 숨기기(기본 OFF = 전부 표시). 이름은 옛 뜻(미검증) — 2026-08-27 부터 검증됐고 "신규 제외" 토글이다
+  // 장비 옵션 팝업(2026-08-27 사장님 지시). 패턴은 /runewords 와 동일 — 카드 안 details(인라인) + 명시적 버튼 → 공용 ItemTip.
+  // 카드에 role="button" 을 넣지 않는 이유는 app/runewords/page.js 의 2026-08-09 주석 참조(보조기술에서 자손이 가려진다).
+  const [openRW, setOpenRW] = useState(null);
 
   useEffect(() => {
     try {
@@ -211,6 +215,25 @@ export default function PlannerPage() {
                   <span className="rw-mtag">{rw.base}</span>
                   <span className="rw-mtag">clvl {rw.clvl}</span>
                 </div>
+
+                {rw.stats?.length > 0 && (
+                  <details className="rw-details">
+                    <summary>장비 옵션 {rw.stats.length}개</summary>
+                    <ul className="rw-details-list">
+                      {rw.stats.map((s, i) => (
+                        <li key={i}>{s}</li>
+                      ))}
+                    </ul>
+                  </details>
+                )}
+                <button
+                  type="button"
+                  className="rw-more"
+                  aria-label={`${rw.kr} ${rw.en} 옵션 큰 화면으로 보기`}
+                  onClick={() => setOpenRW(rw)}
+                >
+                  큰 화면으로 보기 ▸
+                </button>
               </div>
             ))}
           </div>
@@ -223,6 +246,28 @@ export default function PlannerPage() {
           </p>
         </div>
       </div>
+
+      {/* 껍데기는 공용(app/components/ItemTip) — ESC·포커스 복귀·오버레이가 거기 있다. 속은 /runewords 와 같은 구성. */}
+      <ItemTip
+        open={!!openRW}
+        onClose={() => setOpenRW(null)}
+        title={openRW ? `${openRW.kr}${openRW.isNew ? " · NEW 3.x" : ""}` : ""}
+        subtitle={openRW?.en}
+        type="룬워드"
+        footer={openRW ? `요구 레벨 ${openRW.clvl}` : null}
+      >
+        {openRW && (
+          <>
+            <div className="rw-tip-base">{openRW.base} · {openRW.sockets}소켓</div>
+            <div className="rw-tip-runes">
+              {openRW.runes.map((rune, i) => (
+                <span className="rw-rune" key={i}>{runeLabel(rune)}</span>
+              ))}
+            </div>
+            <StatList lines={openRW.stats} />
+          </>
+        )}
+      </ItemTip>
     </main>
   );
 }
