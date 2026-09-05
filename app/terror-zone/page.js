@@ -146,15 +146,21 @@ export default function TerrorZonePage() {
 
   const mode = data?.mode || "mock";
   const isLive = mode === "live";
+  // stale = 실시간 소스 장애 시 서버가 보관해 둔 「마지막 정상 데이터」(staleAsOf 기준).
+  // 모의는 지역을 지어내므로, 진짜였던 옛 데이터가 항상 그보다 정직하다(2026-09-05 사고).
+  const isStale = mode === "stale";
+  const staleTime = isStale && data?.staleAsOf
+    ? new Date(data.staleAsOf).toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit" })
+    : null;
 
-  // 현재/다음 존
+  // 현재/다음 존 — stale 도 데이터의 것을 그대로 쓴다(다음 지역을 모의로 지어내지 않는다)
   const current = data?.current || mockZoneForDate(now);
-  const next = isLive ? (data?.next || null) : mockZoneForDate(new Date(now.getTime() + 3600000));
+  const next = (isLive || isStale) ? (data?.next || null) : mockZoneForDate(new Date(now.getTime() + 3600000));
 
   // 정각 변경 감지 → 라이브면 재요청, 알림
   useEffect(() => {
     if (lastHourRef.current !== null && lastHourRef.current !== hourKey) {
-      if (isLive) fetchTZ();
+      if (isLive || isStale) fetchTZ(); // stale 도 정각마다 복구를 시도한다
       const curFav = isFav(current);
       // "관심만 알림"이 켜져 있고 현재 지역이 관심이 아니면 소리 알림은 생략(배너는 유지)
       const silent = favOnly && !curFav;
@@ -286,8 +292,8 @@ export default function TerrorZonePage() {
               <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
                 <span className="glowdot" />
                 <span className="eyebrow blood">현재 공포의 영역</span>
-                <span className={`modechip ${isLive ? "mode-live" : "mode-mock"}`}>
-                  {isLive ? "● 실시간" : "◈ 모의"}
+                <span className={`modechip ${isLive ? "mode-live" : isStale ? "mode-stale" : "mode-mock"}`}>
+                  {isLive ? "● 실시간" : isStale ? `◉ ${staleTime || "마지막"} 확인 기준` : "◈ 모의"}
                 </span>
               </div>
               <div style={{ marginTop: 10, display: "flex", alignItems: "center", gap: 8 }}>
@@ -367,12 +373,14 @@ export default function TerrorZonePage() {
               <li><span className="dot">●</span><span>브라우저 정책상 <b>소리 켜기</b>를 먼저 눌러야 재생됩니다</span></li>
             </ul>
             <div className="note">
-              <span className={`modechip ${isLive ? "mode-live" : "mode-mock"}`}>
-                {isLive ? "● 실시간" : "◈ 모의 데이터"}
+              <span className={`modechip ${isLive ? "mode-live" : isStale ? "mode-stale" : "mode-mock"}`}>
+                {isLive ? "● 실시간" : isStale ? "◉ 마지막 확인 데이터" : "◈ 모의 데이터"}
               </span>
               &nbsp;
               {isLive
                 ? <>현재{next ? " · 다음" : ""} 지역은 <a href={data?.providedBy || "#"} target="_blank" rel="noreferrer">{data?.provider || "실시간"}</a> 데이터입니다.</>
+                : isStale
+                ? <>실시간 소스가 잠시 응답하지 않아 <b>마지막으로 확인된 데이터{staleTime ? ` (${staleTime} 기준)` : ""}</b>를 표시 중입니다. 정각마다 자동으로 복구를 시도합니다. (사유: {data?.reason || "?"})</>
                 : <>토큰 미설정 또는 API 오류로 모의 로테이션을 표시 중입니다. (사유: {data?.reason || "loading"})</>}
             </div>
           </div>
@@ -431,7 +439,7 @@ export default function TerrorZonePage() {
           </div>
         </details>
 
-        <footer>D2R Terror Zone Navigator · 3.2 패치 지역 기준 · {isLive ? `실시간 (${data?.provider || "live"})` : "모의 데이터"}</footer>
+        <footer>D2R Terror Zone Navigator · 3.2 패치 지역 기준 · {isLive ? `실시간 (${data?.provider || "live"})` : isStale ? "마지막 확인 데이터" : "모의 데이터"}</footer>
       </div>
     </main>
   );

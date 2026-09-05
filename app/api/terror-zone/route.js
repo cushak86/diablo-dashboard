@@ -1,5 +1,13 @@
 import { NextResponse } from "next/server";
 import { matchZone, mockZoneForDate, d2emuZoneFromIds } from "../../../lib/zones";
+import { getRedis } from "../../../lib/redis";
+import { rememberable, staleFrom } from "../../../lib/tz-fallback";
+
+// 마지막 정상 응답 보관 — 인스턴스 메모리(Fluid 재사용) + Redis(인스턴스 교체·리전 대비, 3시간).
+// 왜(2026-09-05 사고): 상류 일시 장애 때 모의 로테이션이 ISR 캐시에 실려 지어낸 지역이 실데이터처럼
+// 보였다. 실패 시엔 이 보관본을 stale 로 내보내고, 그것도 없을 때만 모의로 떨어진다(lib/tz-fallback).
+const LAST_KEY = "tz:v1:last";
+let lastGood = null; // { at, payload }
 
 // 60초 캐시 (fair-use TTL 준수)
 export const revalidate = 60;
@@ -44,12 +52,15 @@ async function fromD2Runewizard() {
     },
     next: { revalidate: 60 },
   });
-  if (!res.ok) return mockPayload(`d2rw-${res.status}`);
+  if (!res.ok) throw new Error(`d2rw-${res.status}`);
 
-  const data = await res.json();
+  // Cloudflare 챌린지처럼 200 + HTML 이 올 수 있다 — json() 이 여기서 터지면 사유를 못 남긴다.
+  const text = await res.text();
+  let data;
+  try { data = JSON.parse(text); } catch { throw new Error("d2rw-badjson"); }
   const curName = (data.currentTerrorZone && data.currentTerrorZone.zone) || data.current;
   const nextName = (data.nextTerrorZone && data.nextTerrorZone.zone) || data.next;
-  if (!curName) return mockPayload("d2rw-empty");
+  if (!curName) throw new Error("d2rw-empty");
 
   return {
     mode: "live",
@@ -84,12 +95,12 @@ async function fromD2Emu() {
     },
     next: { revalidate: 60 },
   });
-  if (!res.ok) return mockPayload(`d2emu-${res.status}`);
+  if (!res.ok) throw new Error(`d2emu-${res.status}`);
 
   const data = await res.json();
   const curZone = d2emuZoneFromIds(data.current);
   const nextZone = d2emuZoneFromIds(data.next);
-  if (!curZone) return mockPayload("d2emu-unmapped");
+  if (!curZone) throw new Error("d2emu-unmapped");
 
   return {
     mode: "live",
@@ -109,8 +120,22 @@ export async function GET() {
   const provider = (process.env.TZ_PROVIDER || "d2emu").toLowerCase();
   try {
     const payload = provider === "d2emu" ? await fromD2Emu() : await fromD2Runewizard();
+    if (rememberable(payload)) {
+      lastGood = { at: new Date().toISOString(), payload };
+      const redis = getRedis();
+      if (redis) redis.set(LAST_KEY, lastGood, { ex: 3 * 3600 }).catch(() => {});
+    }
     return NextResponse.json(payload);
   } catch (err) {
-    return NextResponse.json(mockPayload(`error-${provider}`));
+    // 실패 순간의 진짜 사유를 남긴다 — "error-d2runewizard" 하나로 뭉개져 원인 추적이 안 됐던 것이 이번 조사의 교훈.
+    const reason = (err && err.message) || `error-${provider}`;
+    console.error("[terror-zone]", reason);
+    let saved = lastGood;
+    if (!saved) {
+      const redis = getRedis();
+      if (redis) saved = await redis.get(LAST_KEY).catch(() => null);
+    }
+    const stale = staleFrom(saved, reason);
+    return NextResponse.json(stale ?? mockPayload(reason));
   }
 }
