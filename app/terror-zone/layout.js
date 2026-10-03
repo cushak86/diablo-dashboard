@@ -104,6 +104,7 @@ export default function TerrorZoneLayout({ children }) {
         </div>
       </section>
       <PageGuide
+        guides={["terror-zone-basics","high-rune-drops"]}
         eyebrow="공포의 영역 안내"
         capsule={`공포의 영역(테러존)은 매시 정각에 바뀌는 순환 사냥터입니다. 이 페이지는 지금 열린 지역과 다음 지역, 정각까지 남은 시간을 실시간으로 보여주고, 변경 10·5·1분 전에 음성으로 알려줍니다. 수록된 지역 묶음은 ${TERROR_ZONES.length}개이며, 관심 지역을 별표로 저장하면 그 지역이 열릴 때만 따로 알림을 받을 수 있습니다.`}
         sections={[

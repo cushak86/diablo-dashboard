@@ -12,7 +12,14 @@
 // 페이지가 실제로 하는 동작이다.
 //
 // 새 CSS를 만들지 않았다 — 기존 .wrap/.card/.eyebrow/.zen/.note/ul.info 를 그대로 쓴다.
-export default function PageGuide({ eyebrow, capsule, sections = [], faq = [] }) {
+import Link from "next/link";
+import { guideBySlug } from "../../lib/guides";
+
+// guides: 이 도구와 이어지는 가이드 글 slug 목록(선택). 2026-10-03 추가 —
+//   가이드 4편이 GSC 에서 「발견됨 - 색인 미생성」이었는데, 트래픽이 있는 도구 페이지에서 본문 링크가 0개였다
+//   (푸터·홈에만 있었다). 같은 주제의 도구 → 글로 잇는 문맥 링크가 색인 우선순위의 가장 값싼 신호다.
+export default function PageGuide({ eyebrow, capsule, sections = [], faq = [], guides = [] }) {
+  const guideItems = guides.map(guideBySlug).filter(Boolean);
   return (
     <div className="wrap" style={{ paddingBottom: 24 }}>
       <div className="card">
@@ -35,6 +42,20 @@ export default function PageGuide({ eyebrow, capsule, sections = [], faq = [] })
             )}
           </section>
         ))}
+
+        {guideItems.length > 0 && (
+          <section>
+            <h2 style={{ fontSize: 16, fontWeight: 800, color: "var(--parch)", margin: "20px 0 6px" }}>이 주제를 더 깊게 — 가이드</h2>
+            <ul className="info" style={{ marginTop: 8 }}>
+              {guideItems.map((g) => (
+                <li key={g.slug}>
+                  <b><Link href={`/guide/${g.slug}`} style={{ color: "var(--gold)" }}>{g.title}</Link></b>
+                  <span>{g.summary}</span>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
 
         {faq.length > 0 && (
           <section>

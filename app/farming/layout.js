@@ -23,6 +23,7 @@ export default function FarmingLayout({ children }) {
       <PageSchema path="/farming" />
       {children}
       <PageGuide
+        guides={["countess-runes","terror-zone-basics"]}
         eyebrow="파밍 체크 안내"
         capsule="일일 8개·주간 4개, 모두 12개 항목을 체크하며 오늘 돌 곳을 관리합니다. 일일 항목은 매일 자정(KST), 주간 항목은 매주 월요일 0시(KST)에 자동으로 초기화되므로 직접 지울 필요가 없습니다. 체크 상태는 서버가 아니라 이 브라우저에 저장됩니다."
         sections={[

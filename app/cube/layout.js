@@ -31,6 +31,7 @@ export default function CubeLayout({ children }) {
       <PageSchema path="/cube" />
       {children}
       <PageGuide
+        guides={["high-rune-drops","runeword-basics"]}
         eyebrow="호라드릭 큐브 안내"
         capsule={`호라드릭 큐브는 2막 퀘스트로 얻는 아이템 조합 도구이며, 룬 ${RUNES.length}종은 큐브에서 하위 룬 여러 개를 상위 룬 하나로 승급할 수 있습니다. 이 페이지는 엘부터 조드까지의 승급 표와, 목표 룬을 만들 때 필요한 하위 룬 개수와 보석을 계산하는 조합기를 제공합니다. 예를 들어 이스트만으로 베르 하나를 만들려면 이스트 ${IST_TO_BER.runeCount}개가 필요합니다.`}
         sections={[

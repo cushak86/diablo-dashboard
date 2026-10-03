@@ -26,6 +26,7 @@ export default function RunewordsLayout({ children }) {
       <PageSchema path="/runewords" />
       {children}
       <PageGuide
+        guides={["runeword-basics"]}
         eyebrow="룬워드 안내"
         capsule={`룬워드는 소켓이 뚫린 일반 아이템에 정해진 룬을 정해진 순서로 넣으면 완성되는 장비입니다. 이 페이지는 게임에 존재하는 룬워드 ${RW.length}종(악마술사의 군림 신규 ${NEW}종 포함)의 룬 순서·소켓 수·베이스 종류·요구 레벨·전체 옵션을 정리하고, 룬 조합에 필요한 큐브 승급 비용까지 계산합니다. 이름은 D2R 공식 한글을 따르고 옛 표기로도 검색됩니다.`}
         sections={[

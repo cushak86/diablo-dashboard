@@ -23,6 +23,7 @@ export default function PlannerLayout({ children }) {
       <PageSchema path="/planner" />
       {children}
       <PageGuide
+        guides={["runeword-basics","high-rune-drops"]}
         eyebrow="룬 재고 안내"
         capsule={`가진 룬 ${RUNES.length}종의 개수를 넣으면 룬워드 ${RW.length}종 각각을 '즉시 제작 · 큐브로 가능 · 부족' 세 가지로 판정합니다. 큐브로 가능은 하위 룬을 승급하면 완성된다는 뜻이며, 어떤 룬을 몇 개 승급해야 하는지와 필요한 보석까지 보여줍니다. 재고는 이 브라우저에 저장되고 룬 추천 탭과 공유됩니다.`}
         sections={[

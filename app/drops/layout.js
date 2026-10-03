@@ -28,6 +28,7 @@ export default function DropsLayout({ children }) {
       <PageSchema path="/drops" />
       {children}
       <PageGuide
+        guides={["high-rune-drops","countess-runes"]}
         eyebrow="드롭 위치 안내"
         capsule={`이 페이지는 "이 아이템이 어디서 나올 수 있나"를 게임 데이터의 드롭 표(트레저 클래스)에서 직접 찾아 답합니다. 목표 ${FARM_TARGETS.length}종(고룬·룬워드 재료·인기 고유)을 파밍처 ${Object.keys(SPOTS).length}곳(${SPOT_NAMES})과 대조했고, 지옥 난이도 기준입니다. 드롭 '확률'은 다루지 않습니다 — 경로가 있는지만 답하며, 공포의 영역에서만 열리는 경로 ${TZ_ONLY}건은 따로 표시합니다.`}
         sections={[
