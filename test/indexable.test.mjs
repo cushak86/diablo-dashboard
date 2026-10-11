@@ -112,7 +112,7 @@ console.log("\n[고아] 사이트맵에 실은 페이지는 사이트 안에서 
   const reachable = new Set([...TABS.map((t) => t.href), ...layoutLinks]);
 
   // 가이드 글은 목차(/guide)가 링크한다 — 목차가 도달 가능하면 글도 도달 가능한 것으로 본다(글 정본 lib/guides.js 에서 파생).
-  const viaIndex = (p) => p.startsWith("/guide/") && reachable.has("/guide");
+  const viaIndex = (p) => (p.startsWith("/guide/") && reachable.has("/guide")) || (p.startsWith("/blog/") && reachable.has("/blog"));
   const orphans = SITE_PAGES.map((p) => p.path).filter((p) => !reachable.has(p) && !viaIndex(p));
   check(
     `사이트맵 ${SITE_PAGES.length}개 전부 도달 가능${orphans.length ? " — 고아: " + orphans.join(", ") : ""}`,

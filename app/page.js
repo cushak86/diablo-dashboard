@@ -28,6 +28,7 @@ const HUB = [
   { href: "/terror-zone", label: "공포의 영역", desc: "실시간 테러존 시간표 · 정각 카운트다운 · 음성 알림 · 우버 디아 진행도" },
   { href: "/build", label: "빌드 가이드", desc: "8직업 대표 빌드 — 스킬·스탯·티어·플레이어/용병 장비" },
   { href: "/breakpoints", label: "프레임 기준", desc: "시전(FCR)·타격 회복(FHR)·막기·이동 브레이크포인트 표" },
+  { href: "/blog", label: "블로그", desc: "래더 시즌별 직업 빌드·스킬트리·룬워드·용병·맨땅 육성 글" },
   { href: "/grail", label: "아이템 (연대기)", desc: "홀리 그레일 수집 추적 — 고유·세트·룬워드 진행도" },
   { href: "/runewords", label: "룬워드", desc: "전 룬워드 검색·필터·즐겨찾기" },
   { href: "/new-items", label: "신규 아이템", desc: "3.x 신규 고유/세트 · 트레더리 시세 검색" },
