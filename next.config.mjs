@@ -22,6 +22,12 @@ const nextConfig = {
         destination: `${BASE}/:path*`,
         permanent: true,
       },
+      { source: "/guide/fcr-fhr-frame-break-points", destination: "/guide/fcr-fhr-breakpoints-mechanics", permanent: true },
+      { source: "/guide/uber-diablo-and-annihilus-guide", destination: "/guide/uber-diablo-clone-tracker-annihilus-torch-guide", permanent: true },
+      { source: "/guide/horadric-cube-crafting-break-even", destination: "/guide/horadric-cube-rune-upgrade-socket-craft-recipes", permanent: true },
+      { source: "/guide/sunder-charms-and-immunity-break", destination: "/guide/sunder-charm-immunity-break-resistance-calculation", permanent: true },
+      { source: "/guide/act2-mercenary-aura-and-gear-setup", destination: "/guide/act2-mercenary-aura-insight-infinity-cure-setup", permanent: true },
+      { source: "/guide/ladder-farming-routine-and-traderie", destination: "/guide/ladder-starter-farming-routine-traderie-rune-economy", permanent: true },
     ];
   },
 
