@@ -137,9 +137,9 @@ export default function HomePage() {
 
       {/* 제휴 카드 — 도구 카드와 FAQ 를 다 보여준 **뒤**에 둔다.
           도구 화면에는 넣지 않는다(lib/affiliate.js 머리말의 「안 놓는 곳」). */}
-      <div className="wrap" style={{ marginTop: 20 }}>
+{/* <div className="wrap" style={{ marginTop: 20 }}>
         <AffiliateCards />
-      </div>
+      </div> */}
     </main>
   );
 }
